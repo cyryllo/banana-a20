@@ -11,8 +11,8 @@
  *   sudo armbian-add-overlay bananapro-lemaker-lcd7-hdmi.dts
  *   reboot
  *
- * Status: wariant HDMI (zegar 42.429 MHz) jeszcze niesprawdzony na sprzecie.
- * Poza zegarem identyczny z bananapro-lemaker-lcd7 (obraz i dotyk sprawdzone).
+ * Status: sprawdzony na sprzecie razem z HDMI 1920x1080 (2026-11-03), obraz
+ * nie miga. Poza zegarem identyczny z bananapro-lemaker-lcd7.
  */
 
 /dts-v1/;

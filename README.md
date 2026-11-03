@@ -4,8 +4,8 @@ Ready-to-use Armbian images (Debian 13 trixie, kernel 6.18) for the **LeMaker Ba
 
 | Panel | Display | Touch |
 |---|---|---|
-| 7" LVDS 1024x600 | ✅ tested | ✅ tested |
-| 5" RGB 800x480 | ✅ tested | same controller as 7" |
+| 7" LVDS 1024x600 | ✅ tested, also together with HDMI (`7-hdmi`) | ✅ tested |
+| 5" RGB 800x480 | ✅ tested at 30 MHz (the new 29.7 MHz for HDMI not tested yet) | same controller as 7" |
 | 3.5" RGB 320x240 | not tested (no hardware) | same controller as 7" |
 
 The images also work on the original Banana Pi (non-"Pro").
@@ -13,7 +13,7 @@ The images also work on the original Banana Pi (non-"Pro").
 ## Quick start (recommended)
 
 1. Download an image from [Releases](https://github.com/cyryllo/fex_configuration/releases):
-   - **`..._xfce_desktop.img.xz`**: XFCE desktop, 7" panel enabled
+   - **`..._xfce_desktop.img.xz`**: XFCE desktop, 7" panel enabled (`7-hdmi` variant, works with and without an HDMI monitor)
    - **`..._minimal.img.xz`**: no desktop, LCD disabled (HDMI only), a base for your own setup
 2. Write it to an SD card with [USBImager](https://gitlab.com/bztsrc/usbimager) or balenaEtcher.
 3. Connect the panel, insert the card, power on. The LCD shows a picture once the kernel starts (U-Boot messages are on HDMI only).
@@ -32,9 +32,29 @@ Or uncomment one line at the end of `/boot/armbianEnv.txt`:
 #user_overlays=bananapro-lemaker-lcd35
 user_overlays=bananapro-lemaker-lcd5
 #user_overlays=bananapro-lemaker-lcd7
+#user_overlays=bananapro-lemaker-lcd7-hdmi
 ```
 
+On the 7" choose `7-hdmi` (about 50 Hz) if an HDMI monitor is connected too, `7` (64 Hz) only works without HDMI.
+
 `/boot` is on the ext4 system partition, so it cannot be edited from Windows. Boot once with HDMI (or SSH) to switch the panel.
+
+## Screen settings
+
+**Brightness** (0 = off, 255 = maximum, 200 after the first boot):
+
+```bash
+cat /sys/class/backlight/*/brightness                 # current value
+echo 120 | sudo tee /sys/class/backlight/*/brightness  # set it
+```
+
+systemd stores the last value and restores it at the next boot. On the XFCE desktop you can also use the brightness slider of the power manager panel plugin. To change the starting value for everyone, edit `default-brightness-level = <200>;` in the overlay (see the note below the table in [Problems](#problems)).
+
+**Turning the LCD off** without touching HDMI: `sudo lemaker-lcd off` and reboot. Only the backlight: `echo 0 | sudo tee /sys/class/backlight/*/brightness`.
+
+**HDMI resolution with the LCD on:** keep HDMI at 1920x1080 or 1280x720 (see below). To set it by hand, edit the `extraargs=` line in `/boot/armbianEnv.txt`, e.g. `extraargs=video=HDMI-A-1:1280x720@60`.
+
+**Turning HDMI off** (LCD only): add `bananapro-disable-hdmi` to the `user_overlays=` line, e.g. `user_overlays=bananapro-lemaker-lcd7 bananapro-disable-hdmi`, and reboot. `lemaker-lcd` keeps it when you switch panels.
 
 ## LCD and HDMI at the same time
 
