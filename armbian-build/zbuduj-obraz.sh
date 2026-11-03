@@ -25,9 +25,9 @@ pomoc() {
 	cat <<- EOF
 		Uzycie: $0 [opcje] [-- dodatkowe opcje compile.sh]
 
-		  -e, --ekran N       ekran wlaczony od pierwszego startu: 7 (domyslnie), 5, 35 albo brak
+		  -e, --ekran N       ekran wlaczony od pierwszego startu: 7 (domyslnie), 7-hdmi, 5, 35 albo brak
 		                      (nakladki wszystkich ekranow i tak trafiaja do obrazu,
-		                      na plycie zmienia sie je przez: sudo lemaker-lcd 7|5|35|off)
+		                      na plycie zmienia sie je przez: sudo lemaker-lcd 7|7-hdmi|5|35|off)
 		  -p, --pulpit NAZWA  xfce (domyslnie) albo brak (obraz minimal bez pulpitu)
 		  -j, --jadro NAZWA   current (domyslnie, 6.18) albo edge
 		  -k, --katalog DIR   gdzie trzymac armbian/build (domyslnie ${BUILD_DIR})
@@ -55,8 +55,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${EKRAN}" in
-	5 | 7 | 35 | brak) ;;
-	*) blad "nieznany ekran: ${EKRAN} (7, 5, 35 albo brak)" ;;
+	5 | 7 | 7-hdmi | 35 | brak) ;;
+	*) blad "nieznany ekran: ${EKRAN} (7, 7-hdmi, 5, 35 albo brak)" ;;
 esac
 case "${JADRO}" in
 	current | edge) ;;
@@ -95,7 +95,7 @@ compgen -G "${DTS_SRC}/bananapro-lemaker-lcd*.dts" > /dev/null || blad "nie znal
 # CO: szybka kontrola skladni nakladek przed dlugim budowaniem.
 # DLACZEGO opcjonalna: dtc na komputerze nie jest wymagany, w obrazie i tak jest.
 if command -v dtc > /dev/null; then
-	for f in "${DTS_SRC}"/bananapro-lemaker-lcd*.dts; do
+	for f in "${DTS_SRC}"/bananapro-*.dts; do
 		dtc -@ -q -I dts -O dtb -o /dev/null "${f}" || blad "blad skladni w ${f}"
 	done
 	echo ">> Nakladki kompiluja sie poprawnie"
@@ -129,7 +129,8 @@ cp -r "${SKRYPT_DIR}/userpatches/kernel" "${UP}/"
 cp "${SKRYPT_DIR}/userpatches/customize-image.sh" "${UP}/"
 chmod +x "${UP}/customize-image.sh"
 rm -f "${UP}/overlay/lemaker-lcd/"*.dts
-cp "${DTS_SRC}"/bananapro-lemaker-lcd*.dts "${UP}/overlay/lemaker-lcd/"
+# DLACZEGO bananapro-*.dts: obok nakladek ekranow jest tez bananapro-disable-hdmi.dts
+cp "${DTS_SRC}"/bananapro-*.dts "${UP}/overlay/lemaker-lcd/"
 cp "${SKRYPT_DIR}/lemaker-lcd" "${UP}/overlay/lemaker-lcd/"
 echo "${EKRAN}" > "${UP}/overlay/lemaker-lcd/ekran"
 

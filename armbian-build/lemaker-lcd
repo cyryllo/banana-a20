@@ -4,6 +4,7 @@
 # Uzycie:
 #   sudo lemaker-lcd          pokazuje, ktory ekran jest wlaczony
 #   sudo lemaker-lcd 7        wlacza ekran 7" (albo 5, 35)
+#   sudo lemaker-lcd 7-hdmi   ekran 7" w wariancie do pracy razem z HDMI
 #   sudo lemaker-lcd off      wylacza ekran LCD (zostaje HDMI)
 #
 # Zmiana dziala po ponownym uruchomieniu (sudo reboot).
@@ -13,7 +14,7 @@ set -euo pipefail
 ENV_FILE=/boot/armbianEnv.txt
 DTBO_DIR=/boot/overlay-user
 PREFIX=bananapro-lemaker-lcd
-EKRANY=(35 5 7)
+EKRANY=(35 5 7 7-hdmi)
 POCZATEK="# >>> lemaker-lcd"
 KONIEC="# <<< lemaker-lcd"
 
@@ -35,7 +36,7 @@ pokaz_stan() {
 	if [[ -z "${wlaczony}" ]]; then
 		echo "Ekran LCD: wylaczony (tylko HDMI)"
 	else
-		echo "Ekran LCD: ${wlaczony#"${PREFIX}"}\" (${wlaczony})"
+		echo "Ekran LCD: ${wlaczony#"${PREFIX}"} (${wlaczony})"
 	fi
 	echo "Dostepne: ${EKRANY[*]} off"
 }
@@ -49,7 +50,7 @@ fi
 
 wybor="$1"
 case "${wybor}" in
-	35 | 5 | 7)
+	35 | 5 | 7 | 7-hdmi)
 		[[ -f "${DTBO_DIR}/${PREFIX}${wybor}.dtbo" ]] || blad "brak ${DTBO_DIR}/${PREFIX}${wybor}.dtbo"
 		;;
 	off) ;;
@@ -79,7 +80,7 @@ tmp=$(mktemp)
 sed -e "/^${POCZATEK}\$/,/^${KONIEC}\$/d" -e '/^[[:space:]]*user_overlays=/d' "${ENV_FILE}" > "${tmp}"
 {
 	echo "${POCZATEK}"
-	echo "# LeMaker LCD: uncomment ONE line below (or run: sudo lemaker-lcd 35|5|7|off)"
+	echo "# LeMaker LCD: uncomment ONE line below (or run: sudo lemaker-lcd 35|5|7|7-hdmi|off)"
 	for e in "${EKRANY[@]}"; do
 		if [[ "${e}" == "${wybor}" ]]; then
 			echo "user_overlays=${nowe}"
@@ -96,6 +97,25 @@ sed -e "/^${POCZATEK}\$/,/^${KONIEC}\$/d" -e '/^[[:space:]]*user_overlays=/d' "$
 } >> "${tmp}"
 cat "${tmp}" > "${ENV_FILE}"
 rm -f "${tmp}"
+
+# CO: przy ekranach dobranych pod HDMI (5", 7-hdmi) wymusza HDMI 1920x1080,
+# jesli uzytkownik nie ustawil juz wlasnego trybu HDMI (video=HDMI-A-1).
+# DLACZEGO: LCD i HDMI dziela zegar PLL3. Zegary 29.7 MHz (5") i 42.429 MHz
+# (7-hdmi) pasuja do 297 MHz, ktorego HDMI uzywa tylko w trybach 1080p/720p.
+# Inne tryby HDMI (np. 1024x768) przestawilyby PLL3 i LCD znowu by migal.
+# Bez podlaczonego HDMI ten parametr nic nie zmienia, wiec go nie usuwamy.
+case "${wybor}" in
+	5 | 7-hdmi)
+		if ! grep -q '^extraargs=.*video=HDMI-A-1' "${ENV_FILE}"; then
+			if grep -q '^extraargs=' "${ENV_FILE}"; then
+				sed -i 's/^extraargs=.*/& video=HDMI-A-1:1920x1080@60/' "${ENV_FILE}"
+			else
+				echo "extraargs=video=HDMI-A-1:1920x1080@60" >> "${ENV_FILE}"
+			fi
+			echo "HDMI ustawione na 1920x1080 (extraargs w ${ENV_FILE})"
+		fi
+		;;
+esac
 
 pokaz_stan
 echo "Uruchom ponownie, zeby zmiana zadzialala: sudo reboot"

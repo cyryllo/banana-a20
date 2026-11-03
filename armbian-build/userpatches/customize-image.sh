@@ -41,7 +41,7 @@ done
 apt-get update -qq
 apt-get install -y --no-install-recommends evtest i2c-tools
 
-# CO: skrypt do przelaczania ekranu na plycie (sudo lemaker-lcd 7|5|35|off).
+# CO: skrypt do przelaczania ekranu na plycie (sudo lemaker-lcd 7|7-hdmi|5|35|off).
 install -m 0755 "${SRC}/lemaker-lcd" /usr/local/sbin/lemaker-lcd
 
 # CO: wlacza domyslny ekran (plik "ekran" zapisuje zbuduj-obraz.sh).

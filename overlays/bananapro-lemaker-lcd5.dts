@@ -11,8 +11,9 @@
  *
  * Nie wlaczaj jednoczesnie z nakladka 3.5" ani 7" (wszystkie uzywaja TCON0,
  * tych samych pinow i tego samego adresu dotyku).
- * Status: obraz sprawdzony na sprzecie (2026-10-26), dotyk jak w 7" (ten sam
- * uklad), wymaga uslugi lemaker-touch-retry (armbian-build/).
+ * Status: obraz sprawdzony na sprzecie (2026-10-26) z zegarem 30 MHz,
+ * zegar 29.7 MHz (pod HDMI) jeszcze niesprawdzony. Dotyk jak w 7" (ten sam
+ * uklad), wymaga latki edt-ft5x06 z armbian-build/userpatches/kernel/.
  */
 
 /dts-v1/;
@@ -70,7 +71,13 @@
 		 *   vt     = 1050 / 2       = 525
 		 *   vback  = vbp - vspw     = 32 - 3         = 29
 		 *   vfront = vt - y - vbp   = 525 - 480 - 32 = 13
-		 * Wynik ~61.6 Hz, zgodny z konfiguracja U-Boot dla tego ekranu z linux-sunxi.
+		 * Wynik ~61 Hz (konfiguracja U-Boot z linux-sunxi dla 30 MHz daje ~61.6 Hz).
+		 *
+		 * DLACZEGO 29.7 MHz zamiast 30 MHz z fex: LCD i HDMI dziela w jadrze
+		 * ten sam zegar PLL3 (pll-video0). HDMI w trybach 720p/1080p ustawia go
+		 * na 297 MHz. 29.7 MHz to dokladnie 297 / 10, wiec po podlaczeniu HDMI
+		 * zegar LCD sie nie zmienia i obraz nie miga. Roznica 1% wzgledem fex
+		 * jest dla matrycy bez znaczenia.
 		 *
 		 * DLACZEGO brak hsync-active/vsync-active/de-active: bez nich sterownik
 		 * A20 zostawia polaryzacje domyslne, czyli tak samo jak w fex.
@@ -78,7 +85,7 @@
 		 * pixelclk-active = <0>; albo <1>; (zmienia zbocze zegara pikseli).
 		 */
 		panel-timing {
-			clock-frequency = <30000000>;
+			clock-frequency = <29700000>;	/* 297 MHz / 10 */
 			hactive = <800>;
 			vactive = <480>;
 			hfront-porch = <40>;

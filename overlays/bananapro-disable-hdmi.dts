@@ -1,0 +1,27 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Nakladka Device Tree: wylaczenie HDMI na Banana Pro (Allwinner A20)
+ *
+ * Do uzycia RAZEM z nakladka ekranu LCD, gdy HDMI nie jest potrzebne.
+ * Najpewniejszy sposob na miganie LCD przy podlaczonym kablu HDMI.
+ *
+ * Instalacja na Armbian:
+ *   sudo armbian-add-overlay bananapro-disable-hdmi.dts
+ *   reboot
+ *
+ * Cofniecie: usun "bananapro-disable-hdmi" z linii user_overlays=
+ * w /boot/armbianEnv.txt i zrob reboot.
+ */
+
+/dts-v1/;
+/plugin/;
+
+/*
+ * CO: wylacza kontroler HDMI.
+ * DLACZEGO: LCD i HDMI korzystaja w jadrze z tego samego zegara PLL3.
+ * Gdy HDMI ustawia go pod swoja rozdzielczosc, zegar LCD sie rozjezdza
+ * i obraz miga. Bez HDMI nikt poza LCD tego zegara nie zmienia.
+ */
+&hdmi {
+	status = "disabled";
+};

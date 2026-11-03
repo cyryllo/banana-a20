@@ -9,8 +9,10 @@
  *   sudo armbian-add-overlay bananapro-lemaker-lcd7.dts
  *   reboot
  *
- * Status: obraz i dotyk sprawdzone na sprzecie (2026-10-26), dotyk wymaga
- * uslugi lemaker-touch-retry (armbian-build/), opis w README.
+ * Status: obraz i dotyk sprawdzone na sprzecie (2026-10-26). Dotyk wymaga
+ * latki edt-ft5x06 z armbian-build/userpatches/kernel/ (opis w README).
+ * Przy podlaczonym HDMI obraz moze migac. Wtedy uzyj wariantu
+ * bananapro-lemaker-lcd7-hdmi.dts albo wylacz HDMI (bananapro-disable-hdmi.dts).
  */
 
 /dts-v1/;

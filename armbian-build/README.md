@@ -6,7 +6,7 @@ Compared to the ready-made image from armbian.com:
 
 - the `edt-ft5x06` touch driver is enabled in the kernel (Armbian does not build it by default),
 - compiled overlays for all panels (3.5", 5", 7") are already in `/boot/overlay-user/`,
-- the 7" panel is enabled by default, other panels are switched with `sudo lemaker-lcd 5` (or `35`, `7`, `off`) or by uncommenting one line in `/boot/armbianEnv.txt`,
+- the 7" panel is enabled by default, other panels are switched with `sudo lemaker-lcd 5` (or `35`, `7`, `7-hdmi`, `off`) or by uncommenting one line in `/boot/armbianEnv.txt`,
 - the kernel includes a small `edt-ft5x06` patch that retries the touch controller identification once (the first I2C transfer after boot always fails), so touch works right after boot,
 - `evtest` and `i2c-tools` are installed for checking touch,
 - the `.dts` overlay sources are in `/usr/local/share/lemaker-lcd/` (for adjustments on the board).
@@ -53,7 +53,7 @@ This builds an image with the XFCE desktop and the 7" panel enabled. Options:
 
 | Option | Meaning |
 |---|---|
-| `--ekran 5` | Panel enabled by default ("ekran" = screen): `7` (default), `5`, `35` or `brak` ("none", HDMI only). All overlays are in the image anyway. |
+| `--ekran 5` | Panel enabled by default ("ekran" = screen): `7` (default), `7-hdmi` (7" for use with HDMI), `5`, `35` or `brak` ("none", HDMI only). All overlays are in the image anyway. |
 | `--pulpit brak` | Image without a desktop (Armbian minimal) instead of XFCE ("pulpit" = desktop). |
 | `--jadro edge` | Newer kernel (7.3) instead of `current` (6.18). The overlays were checked on `current`. |
 | `--katalog /path` | A different directory for Armbian build (no spaces). |
@@ -132,7 +132,7 @@ All overlays are already in the image. The 7" panel is enabled by default. For a
 
 ```bash
 sudo lemaker-lcd          # shows which panel is enabled
-sudo lemaker-lcd 5        # enables the 5" panel (or 35, 7)
+sudo lemaker-lcd 5        # enables the 5" panel (or 35, 7, 7-hdmi)
 sudo lemaker-lcd off      # disables the LCD, HDMI only
 sudo reboot
 ```
@@ -145,7 +145,7 @@ sudo nano /boot/armbianEnv.txt
 
 ```
 # >>> lemaker-lcd
-# LeMaker LCD: uncomment ONE line below (or run: sudo lemaker-lcd 35|5|7|off)
+# LeMaker LCD: uncomment ONE line below (or run: sudo lemaker-lcd 35|5|7|7-hdmi|off)
 #user_overlays=bananapro-lemaker-lcd35
 user_overlays=bananapro-lemaker-lcd5
 #user_overlays=bananapro-lemaker-lcd7
@@ -153,6 +153,8 @@ user_overlays=bananapro-lemaker-lcd5
 ```
 
 If two lines are uncommented, only the last one is used. The script keeps other (non-LeMaker) overlays on the `user_overlays=` line untouched.
+
+**With an HDMI monitor connected** use `7-hdmi` instead of `7` (the 5" works as is), otherwise the LCD flickers. `lemaker-lcd 5` and `lemaker-lcd 7-hdmi` also add `extraargs=video=HDMI-A-1:1920x1080@60`, because only 1080p and 720p use the same clock as the LCD. Without HDMI you can instead add `bananapro-disable-hdmi` to the `user_overlays=` line. Details in the [main README](../README.md#lcd-and-hdmi-at-the-same-time).
 
 Note: Armbian keeps `/boot` on the same ext4 partition as the system, so the file cannot be edited from Windows before the first boot. If your panel is not the 7", boot once with HDMI (or over SSH), switch the panel and reboot. On Linux you can mount the card and edit `boot/armbianEnv.txt` directly.
 

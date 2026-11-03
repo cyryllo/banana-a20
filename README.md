@@ -22,7 +22,7 @@ The images also work on the original Banana Pi (non-"Pro").
 
 ```bash
 sudo lemaker-lcd          # show the current panel
-sudo lemaker-lcd 5        # 7, 5, 35 or off
+sudo lemaker-lcd 5        # 7, 7-hdmi, 5, 35 or off
 sudo reboot
 ```
 
@@ -36,10 +36,18 @@ user_overlays=bananapro-lemaker-lcd5
 
 `/boot` is on the ext4 system partition, so it cannot be edited from Windows. Boot once with HDMI (or SSH) to switch the panel.
 
+## LCD and HDMI at the same time
+
+If the LCD works without HDMI but flickers when an HDMI monitor is connected, both outputs fight over a shared clock (see [How it works](#how-it-works)). Two fixes:
+
+- **Use LCD and HDMI together:** on the 7" use `sudo lemaker-lcd 7-hdmi` (refresh ~50 Hz instead of 64 Hz), the 5" already works. HDMI must run at **1920x1080 or 1280x720**: `lemaker-lcd 5` and `lemaker-lcd 7-hdmi` add `extraargs=video=HDMI-A-1:1920x1080@60` to `/boot/armbianEnv.txt`, and on the desktop pick one of these two modes for HDMI too.
+- **No HDMI needed:** add `bananapro-disable-hdmi` to the `user_overlays=` line next to the panel overlay, e.g. `user_overlays=bananapro-lemaker-lcd7 bananapro-disable-hdmi`.
+
 ## Problems
 
 | Symptom | Fix |
 |---|---|
+| LCD flickers only with HDMI connected | See [LCD and HDMI at the same time](#lcd-and-hdmi-at-the-same-time) |
 | Backlight works in reverse | In the overlay change `pwms = <&pwm 0 50000 0>;` to `... 1>;` |
 | 5"/3.5": colour noise | Add `pixelclk-active = <0>;` or `<1>;` to `panel-timing` |
 | Touch mirrored or axes swapped | Add `touchscreen-inverted-x;`, `-inverted-y;` or `touchscreen-swapped-x-y;` to `touchscreen@38` |
@@ -62,7 +70,7 @@ grep -A1 -i edt /proc/bus/input/devices
 
 | Path | Contents |
 |---|---|
-| `overlays/` | Device Tree overlays for the 3.5", 5" and 7" panels |
+| `overlays/` | Device Tree overlays for the 3.5", 5" and 7" panels, the 7" variant for use with HDMI (`lcd7-hdmi`) and `bananapro-disable-hdmi` |
 | `armbian-build/` | Scripts to build the images yourself, see [armbian-build/README.md](armbian-build/README.md) |
 | `stare jądro sunxi 3.4/` | Original LeMaker `fex`/`bin` files for the old 3.4 kernel, kept as the source of the parameters |
 
@@ -75,9 +83,9 @@ git clone https://github.com/cyryllo/fex_configuration.git
 cd fex_configuration
 
 # overlays for all panels + panel switch command
-for f in overlays/bananapro-lemaker-lcd*.dts; do sudo armbian-add-overlay "$f"; done
+for f in overlays/bananapro-*.dts; do sudo armbian-add-overlay "$f"; done
 sudo install -m 0755 armbian-build/lemaker-lcd /usr/local/sbin/
-sudo lemaker-lcd 7        # your panel
+sudo lemaker-lcd 7        # your panel; also removes the other overlays added above
 
 sudo reboot
 ```
@@ -113,10 +121,11 @@ sudo systemctl enable lemaker-touch-retry.service
 ### How it works
 
 - **Display:** all panels use TCON0 (`&tcon0_out` endpoint 0), panel power on PH12, backlight PWM0 (PB2) with enable PH8. Only one panel overlay can be active.
-- **7" LVDS:** the A20 TCON only switches to LVDS mode when the panel is `compatible = "panel-lvds"` (`vesa-24`, 55 MHz, 1024x600).
-- **5" RGB:** generic `panel-dpi` with timings in the overlay (30 MHz, 800x480).
+- **7" LVDS:** the A20 TCON only switches to LVDS mode when the panel is `compatible = "panel-lvds"` (`vesa-24`, 55 MHz, 1024x600; `lcd7-hdmi`: 42.429 MHz).
+- **5" RGB:** generic `panel-dpi` with timings in the overlay (29.7 MHz, 800x480; the fex file had 30 MHz).
 - **3.5" RGB:** `lemaker,bl035-rgb-002` from the kernel's `panel-simple`, no timings in the overlay.
 - **Touch:** FocalTech FT5x06 on I2C3 (PI0/PI1, address 0x38, IRQ PH9), identified as `generic ft5x06 (79)`. The fex pin `ctp_wakeup` (PH7) is the active-low RESET line, so it is `reset-gpios = <&pio 7 7 1>` (the driver then waits 300 ms for the controller). At boot the first I2C transfer to the controller always fails with a bus error (`mv64xxx ... Ctlr Error status 0x0`), the adapter recovers the bus and returns -EAGAIN. Neither powering the controller from PH12 (`vcc-supply`) nor holding PH7 high from early boot (`gpio-hog`) helps. The images carry a small kernel patch that makes `edt-ft5x06` retry the identification once (`identification failed, retrying` in `dmesg`). Without it, bind the driver again by hand: `echo 2-0038 | sudo tee /sys/bus/i2c/drivers/edt_ft5x06/bind`.
+- **LCD + HDMI:** the outputs share no pins, but in `ccu-sun4i-a10.c` the clocks `tcon0-ch0-sclk`, `tcon1-ch1-sclk2` and `hdmi` have the same parents (PLL3 `pll-video0` first) and `CLK_SET_RATE_PARENT`. When booting with HDMI, the LCD sets PLL3 for itself, then HDMI moves it to 297 MHz while the LCD divider stays the same, so the LCD pixel clock goes wrong (`clk_rate_exclusive_get` in `sun4i_tcon.c` only locks the rate when the channel is enabled, too late). The fix is an LCD clock derived from the same 297 MHz: 5" 29.7 MHz = 297 / 10 (`sun4i_tcon_dclk` takes the first exact divider, from 4 up, and for 29.7 MHz that is 10); 7" LVDS has a fixed divider of 7, so 42.429 MHz × 7 = 297.003 MHz, which `ccu_mult` rounds down to 297 MHz. HDMI uses 297 MHz only in 1080p and 720p. A cleaner long-term fix would be to keep TCON0 on `pll-video1`.
 - **Panel switching:** U-Boot ignores lines starting with `#` in `armbianEnv.txt`; `lemaker-lcd` keeps one active `user_overlays=` line and leaves non-LeMaker overlays untouched.
 
 ### fex to Device Tree timing conversion
