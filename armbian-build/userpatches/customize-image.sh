@@ -35,11 +35,15 @@ for dts in "${DTS_DIR}"/*.dts; do
 	echo "lemaker-lcd: ${name}.dtbo"
 done
 
-# CO: narzedzia do sprawdzenia dotyku i I2C (evtest, i2cdetect).
+# CO: narzedzia do sprawdzenia dotyku i I2C (evtest, i2cdetect, na pulpicie tez xinput).
 # DLACZEGO w obrazie: README kaze ich uzyc przy diagnozie, a na swiezym
 # systemie bez nich trzeba by najpierw konfigurowac siec.
 apt-get update -qq
 apt-get install -y --no-install-recommends evtest i2c-tools
+# DLACZEGO xinput tylko z pulpitem: bez X jest bezuzyteczny, a dociaga biblioteki X.
+if [[ "${4:-}" == "yes" ]]; then
+	apt-get install -y --no-install-recommends xinput
+fi
 
 # CO: skrypt do przelaczania ekranu na plycie (sudo lemaker-lcd 7|7-hdmi|5|35|off).
 install -m 0755 "${SRC}/lemaker-lcd" /usr/local/sbin/lemaker-lcd

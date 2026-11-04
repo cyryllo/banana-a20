@@ -5,7 +5,7 @@ Ready-to-use Armbian images (Debian 13 trixie, kernel 6.18) for the **LeMaker Ba
 | Panel | Display | Touch |
 |---|---|---|
 | 7" LVDS 1024x600 | ✅ tested, also together with HDMI (`7-hdmi`) | ✅ tested |
-| 5" RGB 800x480 | ✅ tested at 30 MHz (the new 29.7 MHz for HDMI not tested yet) | same controller as 7" |
+| 5" RGB 800x480 | ✅ tested, also together with HDMI 1920x1080 | driver and overlay checked (correct coordinates), full test pending: the test panel has a cracked touch glass |
 | 3.5" RGB 320x240 | not tested (no hardware) | same controller as 7" |
 
 The images also work on the original Banana Pi (non-"Pro").
