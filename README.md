@@ -4,38 +4,39 @@ Ready-to-use Armbian images (Debian 13 trixie, kernel 6.18) for the **LeMaker Ba
 
 | Panel | Display | Touch |
 |---|---|---|
-| 7" LVDS 1024x600 | ✅ tested, also together with HDMI (`7-hdmi`) | ✅ tested |
+| 7" LVDS 1024x600 | ✅ tested, also together with HDMI (`lemaker-lcd7-hdmi`) | ✅ tested |
 | 5" RGB 800x480 | ✅ tested, also together with HDMI 1920x1080 | driver and overlay checked (correct coordinates), full test pending: the test panel has a cracked touch glass |
 | 3.5" RGB 320x240 | not tested (no hardware) | same controller as 7" |
 
 The images also work on the original Banana Pi (non-"Pro").
 
+**Official Armbian support is on the way.** The touch driver, the touch fix and the panel overlays are submitted to Armbian: [#11293](https://github.com/armbian/build/pull/11293), [#11294](https://github.com/armbian/build/pull/11294), [#11296](https://github.com/armbian/build/pull/11296). The images here are built from the official Armbian build framework with these three changes, so they work exactly like the official Armbian images will once the changes are merged.
+
 ## Quick start (recommended)
 
 1. Download an image from [Releases](https://github.com/cyryllo/fex_configuration/releases):
-   - **`..._xfce_desktop.img.xz`**: XFCE desktop, 7" panel enabled (`7-hdmi` variant, works with and without an HDMI monitor)
+   - **`..._xfce_desktop.img.xz`**: XFCE desktop, 7" panel enabled (`lemaker-lcd7`, for use without an HDMI monitor)
    - **`..._minimal.img.xz`**: no desktop, LCD disabled (HDMI only), a base for your own setup
 2. Write it to an SD card with [USBImager](https://gitlab.com/bztsrc/usbimager) or balenaEtcher.
 3. Connect the panel, insert the card, power on. The LCD shows a picture once the kernel starts (U-Boot messages are on HDMI only).
 
 ## Choosing the panel
 
-```bash
-sudo lemaker-lcd          # show the current panel
-sudo lemaker-lcd 5        # 7, 7-hdmi, 5, 35 or off
-sudo reboot
-```
-
-Or uncomment one line at the end of `/boot/armbianEnv.txt`:
+The panel is chosen by the `overlays=` line in `/boot/armbianEnv.txt` (`sudo nano /boot/armbianEnv.txt`, then `sudo reboot`):
 
 ```
-#user_overlays=bananapro-lemaker-lcd35
-user_overlays=bananapro-lemaker-lcd5
-#user_overlays=bananapro-lemaker-lcd7
-#user_overlays=bananapro-lemaker-lcd7-hdmi
+overlays=lemaker-lcd7
 ```
 
-On the 7" choose `7-hdmi` (about 50 Hz) if an HDMI monitor is connected too, `7` (64 Hz) only works without HDMI.
+| Value | Panel |
+|---|---|
+| `lemaker-lcd5` | 5" RGB, also together with HDMI |
+| `lemaker-lcd7` | 7" LVDS without HDMI (64 Hz) |
+| `lemaker-lcd7-hdmi` | 7" LVDS for use with HDMI (about 50 Hz) |
+
+Use only one `lemaker-lcd...` value at a time. Other overlays can stay on the same line, separated by spaces. To turn the LCD off, remove the `lemaker-lcd...` value (or the whole line if nothing else is on it).
+
+The 3.5" panel is not in the images (no hardware to test it), see [Manual installation](#manual-installation-on-an-existing-armbian).
 
 `/boot` is on the ext4 system partition, so it cannot be edited from Windows. Boot once with HDMI (or SSH) to switch the panel.
 
@@ -48,20 +49,18 @@ cat /sys/class/backlight/*/brightness                 # current value
 echo 120 | sudo tee /sys/class/backlight/*/brightness  # set it
 ```
 
-systemd stores the last value and restores it at the next boot. On the XFCE desktop you can also use the brightness slider of the power manager panel plugin. To change the starting value for everyone, edit `default-brightness-level = <200>;` in the overlay (see the note below the table in [Problems](#problems)).
+systemd stores the last value and restores it at the next boot. On the XFCE desktop you can also use the brightness slider of the power manager panel plugin. Only the backlight off: `echo 0 | sudo tee /sys/class/backlight/*/brightness`.
 
-**Turning the LCD off** without touching HDMI: `sudo lemaker-lcd off` and reboot. Only the backlight: `echo 0 | sudo tee /sys/class/backlight/*/brightness`.
+**HDMI resolution with the LCD on:** keep HDMI at 1920x1080 or 1280x720 (see below), set by the `extraargs=` line in `/boot/armbianEnv.txt`, e.g. `extraargs=video=HDMI-A-1:1280x720@60`.
 
-**HDMI resolution with the LCD on:** keep HDMI at 1920x1080 or 1280x720 (see below). To set it by hand, edit the `extraargs=` line in `/boot/armbianEnv.txt`, e.g. `extraargs=video=HDMI-A-1:1280x720@60`.
-
-**Turning HDMI off** (LCD only): add `bananapro-disable-hdmi` to the `user_overlays=` line, e.g. `user_overlays=bananapro-lemaker-lcd7 bananapro-disable-hdmi`, and reboot. `lemaker-lcd` keeps it when you switch panels.
+**Turning HDMI off** (LCD only): `sudo armbian-add-overlay overlays/bananapro-disable-hdmi.dts` from a clone of this repository, then reboot. It adds `user_overlays=bananapro-disable-hdmi`, remove that line to turn HDMI back on.
 
 ## LCD and HDMI at the same time
 
 If the LCD works without HDMI but flickers when an HDMI monitor is connected, both outputs fight over a shared clock (see [How it works](#how-it-works)). Two fixes:
 
-- **Use LCD and HDMI together:** on the 7" use `sudo lemaker-lcd 7-hdmi` (refresh ~50 Hz instead of 64 Hz), the 5" already works. HDMI must run at **1920x1080 or 1280x720**: `lemaker-lcd 5` and `lemaker-lcd 7-hdmi` add `extraargs=video=HDMI-A-1:1920x1080@60` to `/boot/armbianEnv.txt`, and on the desktop pick one of these two modes for HDMI too.
-- **No HDMI needed:** add `bananapro-disable-hdmi` to the `user_overlays=` line next to the panel overlay, e.g. `user_overlays=bananapro-lemaker-lcd7 bananapro-disable-hdmi`.
+- **Use LCD and HDMI together:** on the 7" use `overlays=lemaker-lcd7-hdmi` (refresh ~50 Hz instead of 64 Hz), the 5" (`lemaker-lcd5`) already works. HDMI must run at **1920x1080 or 1280x720**: add `extraargs=video=HDMI-A-1:1920x1080@60` to `/boot/armbianEnv.txt`, and on the desktop pick one of these two modes for HDMI too.
+- **No HDMI needed:** turn HDMI off, see [Screen settings](#screen-settings).
 
 ## Problems
 
@@ -71,9 +70,9 @@ If the LCD works without HDMI but flickers when an HDMI monitor is connected, bo
 | Backlight works in reverse | In the overlay change `pwms = <&pwm 0 50000 0>;` to `... 1>;` |
 | 5"/3.5": colour noise | Add `pixelclk-active = <0>;` or `<1>;` to `panel-timing` |
 | Touch mirrored or axes swapped | Add `touchscreen-inverted-x;`, `-inverted-y;` or `touchscreen-swapped-x-y;` to `touchscreen@38` |
-| Touch stopped after `apt upgrade` | The official kernel has no touch driver: `sudo apt-mark hold linux-image-current-sunxi linux-dtb-current-sunxi` |
+| Touch or the panel stopped after `apt upgrade` | Until the Armbian changes are merged, the official kernel has no touch driver and no `lemaker-lcd...` overlays: `sudo apt-mark hold linux-image-current-sunxi linux-dtb-current-sunxi` |
 
-Overlay sources on the board are in `/usr/local/share/lemaker-lcd/`. After editing, run `sudo armbian-add-overlay <file>.dts`, then `sudo lemaker-lcd <panel>` (keeps only one panel active) and reboot.
+To change an overlay, take its source from `overlays/` in this repository (the same settings as `lemaker-lcd...`), edit it, run `sudo armbian-add-overlay <file>.dts`, remove the `lemaker-lcd...` value from `overlays=` and reboot.
 
 Reports are welcome in the [Armbian forum thread](https://forum.armbian.com/topic/7233-bananapi-pro-7-touchlcd-with-debian-buster-and-mainline-kernel-5xxxx/) or as GitHub issues. Please include:
 
@@ -91,7 +90,7 @@ grep -A1 -i edt /proc/bus/input/devices
 | Path | Contents |
 |---|---|
 | `overlays/` | Device Tree overlays for the 3.5", 5" and 7" panels, the 7" variant for use with HDMI (`lcd7-hdmi`) and `bananapro-disable-hdmi` |
-| `armbian-build/` | Scripts to build the images yourself, see [armbian-build/README.md](armbian-build/README.md) |
+| `armbian-build/` | Scripts to build the images yourself (`zbuduj-obraz-pr.sh`: official Armbian + the three Armbian PRs, used for the images since v0.6; `zbuduj-obraz.sh`: older images with `lemaker-lcd`), see [armbian-build/README.md](armbian-build/README.md) |
 | `stare jądro sunxi 3.4/` | Original LeMaker `fex`/`bin` files for the old 3.4 kernel, kept as the source of the parameters |
 
 ### Manual installation on an existing Armbian

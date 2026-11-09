@@ -21,12 +21,26 @@ The build is based on the official [Armbian build framework](https://docs.armbia
 
 | File | Purpose |
 |---|---|
+| `zbuduj-obraz-pr.sh` | Builds the images since v0.6: the official Armbian build framework plus the three Armbian PRs with LeMaker support ([#11293](https://github.com/armbian/build/pull/11293), [#11294](https://github.com/armbian/build/pull/11294), [#11296](https://github.com/armbian/build/pull/11296)), nothing else. The panel is enabled with `overlays=lemaker-lcd7` (`lcd5`, `lcd7-hdmi`), as in official Armbian after the PRs are merged. |
 | `zbuduj-obraz.sh` | Script that does everything ("build image"): downloads Armbian build, copies the files, starts the build. |
 | `lemaker-lcd` | Panel switch script installed on the board as `/usr/local/sbin/lemaker-lcd`. |
 | `userpatches/kernel/archive/sunxi-6.18/edt-ft5x06-retry-identify-after-bus-recovery.patch` | Kernel patch: the touch driver retries the identification once after the I2C bus recovery at boot. |
 | `lemaker-touch-retry`, `lemaker-touch-retry.service` | Not used in the images. Only for kernels without the patch above (e.g. a module built by hand), see the [main README](../README.md#manual-installation-on-an-existing-armbian). |
 | `userpatches/config-bananapro-lcd.conf` | Build settings (board, Debian 13, kernel) and enabling the touch driver. |
 | `userpatches/customize-image.sh` | Run by Armbian inside the image: compiles the overlays, installs `lemaker-lcd` and enables the default panel. |
+
+## Images with the official overlays (since v0.6)
+
+```bash
+git clone https://github.com/cyryllo/fex_configuration.git
+cd fex_configuration/armbian-build
+./zbuduj-obraz-pr.sh --ekran 7          # XFCE, overlays=lemaker-lcd7
+./zbuduj-obraz-pr.sh --pulpit brak      # minimal, LCD disabled
+```
+
+The script fetches the three PR branches from [cyryllo/build-armbian](https://github.com/cyryllo/build-armbian), merges them into a local `lemaker-prs` branch in `~/armbian-build` and builds with a separate `userpatches-lemaker-pr` directory, so the files of `zbuduj-obraz.sh` in `userpatches/` are not used. At the end it checks out the previous commit again. `--ekran` takes `brak` (default, LCD disabled), `7`, `7-hdmi` or `5`; for `5` and `7-hdmi` it also adds `extraargs=video=HDMI-A-1:1920x1080@60`. The requirements are the same as below. Once the PRs are merged, the official Armbian images do the same and this script is no longer needed.
+
+The rest of this page describes `zbuduj-obraz.sh` (images up to v0.5, panel switching with `lemaker-lcd`).
 
 ## Requirements (the computer you build on)
 
