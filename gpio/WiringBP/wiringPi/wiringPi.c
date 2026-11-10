@@ -665,6 +665,24 @@ static int pinTobcm_BP [64] =
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //45... 60
   -1, -1, -1, -1                                                                   // ...63
 } ;
+/*
+ * wpiBcmToSysfs:
+ *	WHAT: translate a BCM-style pin number to the kernel GPIO number used
+ *	in /sys/class/gpio (bank * 32 + pin, e.g. PI19 = 8 * 32 + 19 = 275).
+ *	WHY: the sunxi-3.4 kernel exported header pins under small numbers
+ *	(from script.bin), so the BCM number worked there. The mainline kernel
+ *	numbers every SoC pin, and BCM 17 would be PA17 (Ethernet), not
+ *	physical pin 11 (PI19). Not a Banana Pro: the number is returned as is.
+ *********************************************************************************
+ */
+
+int wpiBcmToSysfs (int bcmPin)
+{
+  if ((piBoardRev () != BPRVER) || (bcmPin < 0) || (bcmPin > 63))
+    return bcmPin ;
+  return pinTobcm_BP [bcmPin] ;
+}
+
 static int physToGpio_BP [64] =
 {
   -1,          // 0
@@ -2445,10 +2463,16 @@ int waitForInterrupt (int pin, int mS)
 
   x = poll (&polls, 1, mS) ;
 
-// Do a dummy read to clear the interrupt
-//	A one character read appars to be enough.
+// WHAT: rewind and read the value file to clear the interrupt.
+// WHY: sysfs re-arms poll() only after a read from the start of the file;
+//	a read without the rewind (as before) left the event pending, so poll()
+//	returned at once forever and the ISR ran in a busy loop.
 
-  (void)read (fd, &c, 1) ;
+  if (x > 0)
+  {
+    lseek (fd, 0, SEEK_SET) ;
+    (void)read (fd, &c, 1) ;
+  }
 
   return x ;
 }
@@ -2569,7 +2593,7 @@ int wiringPiISR (int pin, int mode, void (*function)(void))
 
   if (sysFds [bcmGpioPin] == -1)
   {
-    sprintf (fName, "/sys/class/gpio/gpio%d/value", bcmGpioPin) ;
+    sprintf (fName, "/sys/class/gpio/gpio%d/value", wpiBcmToSysfs (bcmGpioPin)) ;
     if ((sysFds [bcmGpioPin] = open (fName, O_RDWR)) < 0)
       return wiringPiFailure (WPI_FATAL, "wiringPiISR: unable to open %s: %s\n", fName, strerror (errno)) ;
   }
@@ -2962,9 +2986,12 @@ int wiringPiSetupSys (void)
 //	the 'value' interface to speed things up for later
     if(BPRVER == boardRev)    /*modify for BananaPro by LeMaker team*/
 	{
-	  for (pin = 1 ; pin < 32 ; ++pin)
+	  for (pin = 0 ; pin < 64 ; ++pin)
 	  {
-		sprintf (fName, "/sys/class/gpio/gpio%d/value", pin) ;
+		// WHAT: sysFds is indexed by BCM number, the file by kernel number.
+		if (wpiBcmToSysfs (pin) < 0)
+		  continue ;
+		sprintf (fName, "/sys/class/gpio/gpio%d/value", wpiBcmToSysfs (pin)) ;
 		sysFds [pin] = open (fName, O_RDWR) ;
 	  }
 	}

@@ -360,12 +360,15 @@ static void doExports (int argc, char *argv [])
   char fName [128] ;
   char buf [16] ;
 
-  for (first = 0, i = 0 ; i < 32 ; ++i)	// Crude, but effective  /*64->32 modify for BananaPro by lemaker team*/
+  for (first = 0, i = 0 ; i < 64 ; ++i)	// Crude, but effective
   {
+    int s = wpiBcmToSysfs (i) ;	// WHAT: BCM number -> kernel GPIO number
+    if (s < 0)
+      continue ;
 
 // Try to read the direction
 
-    sprintf (fName, "/sys/class/gpio/gpio%d/direction", i) ;
+    sprintf (fName, "/sys/class/gpio/gpio%d/direction", s) ;
     if ((fd = open (fName, O_RDONLY)) == -1)
       continue ;
 
@@ -390,7 +393,7 @@ static void doExports (int argc, char *argv [])
 
 // Try to Read the value
 
-    sprintf (fName, "/sys/class/gpio/gpio%d/value", i) ;
+    sprintf (fName, "/sys/class/gpio/gpio%d/value", s) ;
     if ((fd = open (fName, O_RDONLY)) == -1)
     {
       printf ("No Value file (huh?)\n") ;
@@ -408,7 +411,7 @@ static void doExports (int argc, char *argv [])
 
 // Read any edge trigger file
 
-    sprintf (fName, "/sys/class/gpio/gpio%d/edge", i) ;
+    sprintf (fName, "/sys/class/gpio/gpio%d/edge", s) ;
     if ((fd = open (fName, O_RDONLY)) == -1)
     {
       printf ("\n") ;
@@ -458,6 +461,13 @@ void doExport (int argc, char *argv [])
 	return ;
   }
  /*end 2014.08.19*/
+
+  // WHAT: BCM-style number -> kernel GPIO number (see wpiBcmToSysfs).
+  if ((pin = wpiBcmToSysfs (pin)) < 0)
+  {
+    fprintf (stderr, "%s: pin %s is not on the header\n", argv [0], argv [2]) ;
+    exit (1) ;
+  }
  
   mode = argv [3] ;
 
@@ -578,6 +588,13 @@ void doEdge (int argc, char *argv [])
   }
 /*end 2014.08.19*/	
 
+  // WHAT: BCM-style number -> kernel GPIO number (see wpiBcmToSysfs).
+  if ((pin = wpiBcmToSysfs (pin)) < 0)
+  {
+    fprintf (stderr, "%s: pin %s is not on the header\n", argv [0], argv [2]) ;
+    exit (1) ;
+  }
+
 // Export the pin and set direction to input
 
   if ((fd = fopen ("/sys/class/gpio/export", "w")) == NULL)
@@ -655,6 +672,13 @@ void doUnexport (int argc, char *argv [])
 	return ;
   }
 	/*end 2014.08.19*/
+
+  // WHAT: BCM-style number -> kernel GPIO number (see wpiBcmToSysfs).
+  if ((pin = wpiBcmToSysfs (pin)) < 0)
+  {
+    fprintf (stderr, "%s: pin %s is not on the header\n", argv [0], argv [2]) ;
+    exit (1) ;
+  }
 	
   if ((fd = fopen ("/sys/class/gpio/unexport", "w")) == NULL)
   {
@@ -680,14 +704,16 @@ void doUnexportall (char *progName)
   FILE *fd ;
   int pin ;
 
-  for (pin = 1 ; pin < 32 ; ++pin) /*0->1 63->32 modify for BananaPro by LeMaker team*/
+  for (pin = 0 ; pin < 64 ; ++pin)
   {
+    if (wpiBcmToSysfs (pin) < 0)	// WHAT: only pins on the header
+      continue ;
     if ((fd = fopen ("/sys/class/gpio/unexport", "w")) == NULL)
     {
       fprintf (stderr, "%s: Unable to open GPIO export interface\n", progName) ;
       exit (1) ;
     }
-    fprintf (fd, "%d\n", pin) ;
+    fprintf (fd, "%d\n", wpiBcmToSysfs (pin)) ;
     fclose (fd) ;
   }
 }
