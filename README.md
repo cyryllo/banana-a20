@@ -15,7 +15,7 @@ The images also work on the original Banana Pi (non-"Pro").
 | Folder | Project |
 |---|---|
 | [gpio/](gpio/README.md) | **GPIO**: pinout of the 40-pin header, WiringBP (C, `gpio readall`) and LMK.GPIO (Python, RPi.GPIO API) fixed for the current kernel, libgpiod, examples |
-| [armbian-build/konsola/](armbian-build/konsola/README.md) | **Arkada20**: retro game console image (RetroArch without a desktop, like Lakka) |
+| [arkada20/](arkada20/README.md) | **Arkada20**: retro game console image (RetroArch without a desktop, like Lakka) for a handheld or an arcade cabinet |
 
 **Official Armbian support is on the way.** The touch driver, the touch fix and the panel overlays are submitted to Armbian: [#11293](https://github.com/armbian/build/pull/11293), [#11294](https://github.com/armbian/build/pull/11294), [#11296](https://github.com/armbian/build/pull/11296). The images here are built from the official Armbian build framework with these three changes, so they work exactly like the official Armbian images will once the changes are merged.
 
@@ -98,7 +98,8 @@ grep -A1 -i edt /proc/bus/input/devices
 |---|---|
 | `overlays/` | Device Tree overlays for the 3.5", 5" and 7" panels, the 7" variant for use with HDMI (`lcd7-hdmi`) and `bananapro-disable-hdmi` |
 | `armbian-build/` | Scripts to build the images yourself (`zbuduj-obraz-pr.sh`: official Armbian + the three Armbian PRs, used for the images since v0.6; `zbuduj-obraz.sh`: older images with `lemaker-lcd`), see [armbian-build/README.md](armbian-build/README.md) |
-| `armbian-build/konsola/` | **Arkada20**: a retro game console image (RetroArch without a desktop, like Lakka) for the Banana Pro with a LeMaker LCD, see [armbian-build/konsola/README.md](armbian-build/konsola/README.md) |
+| `arkada20/` | **Arkada20**: a retro game console image (RetroArch without a desktop, like Lakka) for the Banana Pro with a LeMaker LCD, see [arkada20/README.md](arkada20/README.md) |
+| `gpio/` | **GPIO**: pinout, WiringBP, LMK.GPIO, libgpiod, examples, see [gpio/README.md](gpio/README.md) |
 | `stare jądro sunxi 3.4/` | Original LeMaker `fex`/`bin` files for the old 3.4 kernel, kept as the source of the parameters |
 
 ### Manual installation on an existing Armbian

@@ -6,6 +6,17 @@ Arkada20 turns a LeMaker Banana Pro (Banana Pi Pro) with a LeMaker LCD panel int
 
 Made for two setups: a handheld with the 5" panel and an arcade cabinet with the 7" panel, both controlled with USB gamepads or arcade joysticks.
 
+## Download
+
+Ready image: [Releases](https://github.com/cyryllo/banana-a20/releases), tags starting with `arkada20-` (first: [arkada20-v1.0-trixie-6.18.62](https://github.com/cyryllo/banana-a20/releases/tag/arkada20-v1.0-trixie-6.18.62)). Write it to an SD card with [USBImager](https://gitlab.com/bztsrc/usbimager) or balenaEtcher.
+
+| What | Status |
+|---|---|
+| 7" panel (arcade cabinet) | tested: picture, sound, gamepads, Wi-Fi from the menu |
+| 5" panel (handheld) | the panel works with the same overlay, not yet tested with Arkada20 |
+| touchscreen in the menu | experimental, off by default |
+| Banana Pi (non-"Pro") | should work like the LCD images, not tested with Arkada20 |
+
 ## First boot
 
 1. Write the image to an SD card, connect the panel and a USB gamepad, power on.
@@ -84,13 +95,12 @@ With an HDMI monitor connected too, also add `extraargs=video=HDMI-A-1:1920x1080
 
 ## Building the image
 
-On a Linux x86 computer with Docker (see [../README.md](../README.md) for the requirements):
+On a Linux x86 computer with Docker (requirements: [../armbian-build/README.md](../armbian-build/README.md#requirements-the-computer-you-build-on)), from the main folder of the repository:
 
 ```bash
-cd armbian-build
-konsola/zbuduj-rdzenie.sh       # libretro cores for the A20 (cross-compiled)
-konsola/zbuduj-retroarch.sh     # RetroArch with the patches from konsola/latki-retroarch/
-./zbuduj-obraz-pr.sh --pulpit brak --ekran 7 --konsola
+arkada20/zbuduj-rdzenie.sh       # libretro cores for the A20 (cross-compiled)
+arkada20/zbuduj-retroarch.sh     # RetroArch with the patches from arkada20/latki-retroarch/
+armbian-build/zbuduj-obraz-pr.sh --pulpit brak --ekran 7 --konsola
 ```
 
 The image is `~/armbian-build/output/images/Arkada20_<date>_bananapipro_trixie_<kernel>.img`. `--gry DIR` adds games from `DIR/<system>/` for your own use; never publish an image with games.
@@ -113,6 +123,23 @@ The Debian fonts of the menus (Roboto) lack the on-screen keyboard symbols, the 
 ### Licenses
 
 RetroArch and several cores are GPL: when you share a built image, also share the sources (the build scripts fetch exact versions, listed in `/usr/lib/arm-linux-gnueabihf/libretro/WERSJE-konsola.txt` and `/usr/local/share/retroarch-konsola-wersja.txt`). MAME 2003-Plus, FBNeo, Genesis Plus GX and Snes9x 2010 have non-commercial licenses: they may be shared for free, but an image or device with them must not be sold.
+
+### Files in this folder
+
+| File | What it is |
+|---|---|
+| `customize-konsola.sh` | runs inside the image while it is built: packages, RetroArch, cores, accounts, Samba, settings |
+| `retroarch.cfg` | RetroArch settings of the image (only the values that differ from the defaults) |
+| `retroarch-konsola.service` | starts RetroArch on the screen at boot |
+| `konsola-listy`, `konsola-listy.service`, `.path` | builds the game lists (one icon per system) and updates them when files change |
+| `avahi-samba.service` | announces the network shares (`arkada20.local`) |
+| `autoconfig/udev/` | extra gamepad profiles |
+| `zbuduj-rdzenie.sh` | cross-compiles the libretro cores into `rdzenie/` |
+| `zbuduj-retroarch.sh` | cross-compiles RetroArch with the patches into `retroarch-bin/` |
+| `latki-retroarch/` | RetroArch patches (reported upstream as [#20060](https://github.com/libretro/RetroArch/issues/20060) and [#20061](https://github.com/libretro/RetroArch/issues/20061)) |
+| `logo/` | the logo and its generator |
+
+`rdzenie/` and `retroarch-bin/` are build results, not in git.
 
 ## Logo
 

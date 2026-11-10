@@ -1,7 +1,7 @@
 #!/bin/bash
 # Konsola do gier na Banana Pro: RetroArch na ekranie od startu (jak Lakka).
 # Uruchamiany w chroot obrazu przez customize-image.sh (zbuduj-obraz-pr.sh --konsola).
-# Pliki z armbian-build/konsola/ sa tu widoczne jako /tmp/overlay/konsola/.
+# Pliki z katalogu arkada20/ sa tu widoczne jako /tmp/overlay/konsola/.
 
 set -euo pipefail
 

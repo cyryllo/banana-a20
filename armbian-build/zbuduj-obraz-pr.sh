@@ -22,6 +22,8 @@ PULPIT="xfce"
 KONSOLA="no"
 GRY=""
 SKRYPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# CO: pliki konsoli Arkada20 (katalog arkada20/ w glownym katalogu repozytorium).
+KONSOLA_DIR="$(dirname "${SKRYPT_DIR}")/arkada20"
 BUILD_DIR="${HOME}/armbian-build"
 FORK="https://github.com/cyryllo/build-armbian.git"
 # DLACZEGO te trzy galezie, a nie numery PR: galezie zawieraja dokladnie to,
@@ -35,7 +37,7 @@ pomoc() {
 		  -e, --ekran N       ekran wlaczony od pierwszego startu: brak (domyslnie), 7, 7-hdmi albo 5
 		  -p, --pulpit NAZWA  xfce (domyslnie) albo brak (obraz minimal bez pulpitu)
 		  -g, --konsola       konsola do gier: RetroArch na ekranie od startu, jak Lakka
-		                      (tylko z --pulpit brak; najpierw konsola/zbuduj-rdzenie.sh)
+		                      (tylko z --pulpit brak; najpierw ../arkada20/zbuduj-rdzenie.sh)
 		      --gry DIR       gry dolaczone do obrazu konsoli, DIR/<system>/plik (np. DIR/mame2003/gra.zip);
 		                      obrazu z grami nie publikuj (prawa autorskie)
 		  -k, --katalog DIR   katalog armbian/build (domyslnie ${BUILD_DIR})
@@ -76,10 +78,10 @@ esac
 # a XFCE zajmowalby ten sam ekran i pamiec.
 if [[ "${KONSOLA}" == "yes" ]]; then
 	[[ "${PULPIT}" == "brak" ]] || blad "--konsola dziala tylko z --pulpit brak"
-	compgen -G "${SKRYPT_DIR}/konsola/rdzenie/*_libretro.so" > /dev/null ||
-		blad "brak rdzeni, uruchom najpierw: ${SKRYPT_DIR}/konsola/zbuduj-rdzenie.sh"
-	[[ -x "${SKRYPT_DIR}/konsola/retroarch-bin/retroarch" ]] ||
-		blad "brak RetroArch, uruchom najpierw: ${SKRYPT_DIR}/konsola/zbuduj-retroarch.sh"
+	compgen -G "${KONSOLA_DIR}/rdzenie/*_libretro.so" > /dev/null ||
+		blad "brak rdzeni, uruchom najpierw: ${KONSOLA_DIR}/zbuduj-rdzenie.sh"
+	[[ -x "${KONSOLA_DIR}/retroarch-bin/retroarch" ]] ||
+		blad "brak RetroArch, uruchom najpierw: ${KONSOLA_DIR}/zbuduj-retroarch.sh"
 fi
 if [[ -n "${GRY}" ]]; then
 	[[ "${KONSOLA}" == "yes" ]] || blad "--gry dziala tylko z --konsola"
@@ -147,9 +149,9 @@ fi
 if [[ "${KONSOLA}" == "yes" ]]; then
 	# CO: pliki konsoli trafiaja do obrazu jako /tmp/overlay/konsola (katalog overlay/ z userpatches).
 	mkdir -p "${UP}/overlay/konsola/rdzenie"
-	cp -r "${SKRYPT_DIR}"/konsola/autoconfig "${SKRYPT_DIR}"/konsola/retroarch-bin "${UP}/overlay/konsola/"
-	cp "${SKRYPT_DIR}"/konsola/{customize-konsola.sh,retroarch.cfg,retroarch-konsola.service,konsola-listy,konsola-listy.service,konsola-listy.path,avahi-samba.service} "${UP}/overlay/konsola/"
-	cp "${SKRYPT_DIR}"/konsola/rdzenie/{*_libretro.so,WERSJE.txt} "${UP}/overlay/konsola/rdzenie/"
+	cp -r "${KONSOLA_DIR}"/autoconfig "${KONSOLA_DIR}"/retroarch-bin "${UP}/overlay/konsola/"
+	cp "${KONSOLA_DIR}"/{customize-konsola.sh,retroarch.cfg,retroarch-konsola.service,konsola-listy,konsola-listy.service,konsola-listy.path,avahi-samba.service} "${UP}/overlay/konsola/"
+	cp "${KONSOLA_DIR}"/rdzenie/{*_libretro.so,WERSJE.txt} "${UP}/overlay/konsola/rdzenie/"
 	if [[ -n "${GRY}" ]]; then
 		mkdir -p "${UP}/overlay/konsola/gry"
 		cp -r "${GRY}/." "${UP}/overlay/konsola/gry/"
