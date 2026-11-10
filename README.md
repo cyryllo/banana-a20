@@ -10,6 +10,13 @@ Ready-to-use Armbian images (Debian 13 trixie, kernel 6.18) for the **LeMaker Ba
 
 The images also work on the original Banana Pi (non-"Pro").
 
+**Also in this repository:**
+
+| Folder | Project |
+|---|---|
+| [gpio/](gpio/README.md) | **GPIO**: pinout of the 40-pin header, WiringBP (C, `gpio readall`) and LMK.GPIO (Python, RPi.GPIO API) fixed for the current kernel, libgpiod, examples |
+| [armbian-build/konsola/](armbian-build/konsola/README.md) | **Arkada20**: retro game console image (RetroArch without a desktop, like Lakka) |
+
 **Official Armbian support is on the way.** The touch driver, the touch fix and the panel overlays are submitted to Armbian: [#11293](https://github.com/armbian/build/pull/11293), [#11294](https://github.com/armbian/build/pull/11294), [#11296](https://github.com/armbian/build/pull/11296). The images here are built from the official Armbian build framework with these three changes, so they work exactly like the official Armbian images will once the changes are merged.
 
 ## Quick start (recommended)
