@@ -21,7 +21,7 @@ The build is based on the official [Armbian build framework](https://docs.armbia
 
 | File | Purpose |
 |---|---|
-| `zbuduj-obraz-pr.sh` | Builds the images since v0.6: the official Armbian build framework plus the three Armbian PRs with LeMaker support ([#11293](https://github.com/armbian/build/pull/11293), [#11294](https://github.com/armbian/build/pull/11294), [#11296](https://github.com/armbian/build/pull/11296)), nothing else. The panel is enabled with `overlays=lemaker-lcd7` (`lcd5`, `lcd7-hdmi`), as in official Armbian after the PRs are merged. |
+| `zbuduj-obraz-pr.sh` | Builds the images since v0.6 from the official Armbian build framework, which includes the LeMaker support since November 2026 ([#11293](https://github.com/armbian/build/pull/11293), [#11294](https://github.com/armbian/build/pull/11294), [#11296](https://github.com/armbian/build/pull/11296), all merged). The panel is enabled with `overlays=lemaker-lcd7` (`lcd5`, `lcd7-hdmi`), as in official Armbian. Also builds the [Arkada20](../arkada20/README.md) game console image (`--konsola`). |
 | `zbuduj-obraz.sh` | Script that does everything ("build image"): downloads Armbian build, copies the files, starts the build. |
 | `lemaker-lcd` | Panel switch script installed on the board as `/usr/local/sbin/lemaker-lcd`. |
 | `userpatches/kernel/archive/sunxi-6.18/edt-ft5x06-retry-identify-after-bus-recovery.patch` | Kernel patch: the touch driver retries the identification once after the I2C bus recovery at boot. |
@@ -38,7 +38,17 @@ cd banana-a20/armbian-build
 ./zbuduj-obraz-pr.sh --pulpit brak      # minimal, LCD disabled
 ```
 
-The script fetches the three PR branches from [cyryllo/build-armbian](https://github.com/cyryllo/build-armbian), merges them into a local `lemaker-prs` branch in `~/armbian-build` and builds with a separate `userpatches-lemaker-pr` directory, so the files of `zbuduj-obraz.sh` in `userpatches/` are not used. At the end it checks out the previous commit again. `--ekran` takes `brak` (default, LCD disabled), `7`, `7-hdmi` or `5`; for `5` and `7-hdmi` it also adds `extraargs=video=HDMI-A-1:1920x1080@60`. The requirements are the same as below. Once the PRs are merged, the official Armbian images do the same and this script is no longer needed.
+The script fetches the official [armbian/build](https://github.com/armbian/build) (branch `main` by default) into a local `zbuduj-obraz-pr` branch in `~/armbian-build`, checks that this version already has the LeMaker support (touch driver and `lemaker-lcd` overlays, merged on 2026-11-10) and builds with a separate `userpatches-lemaker-pr` directory, so the files of `zbuduj-obraz.sh` in `userpatches/` are not used. At the end it checks out the previous commit again. The name ends in `-pr` because it first built from the PR branches, before they were merged.
+
+| Option | Meaning |
+|---|---|
+| `--ekran N` | panel enabled at first boot: `brak` (default, LCD disabled), `7`, `7-hdmi` or `5`; for `5` and `7-hdmi` it also adds `extraargs=video=HDMI-A-1:1920x1080@60` |
+| `--pulpit NAME` | `xfce` (default) or `brak` (minimal image without a desktop) |
+| `--konsola` | the [Arkada20](../arkada20/README.md) game console (only with `--pulpit brak`) |
+| `--armbian REF` | branch, tag or commit of armbian/build (default `main`); a fixed commit gives the same image again, e.g. for a release |
+| `--katalog DIR` | armbian/build folder (default `~/armbian-build`) |
+
+The requirements are the same as below. The weekly official Armbian images for the Banana Pro (minimal, `current` kernel) contain the same LCD support once they are built from a version after 2026-11-10; this script is for the XFCE image, a panel enabled from the first boot, Arkada20 or a fixed Armbian version.
 
 The rest of this page describes `zbuduj-obraz.sh` (images up to v0.5, panel switching with `lemaker-lcd`).
 
