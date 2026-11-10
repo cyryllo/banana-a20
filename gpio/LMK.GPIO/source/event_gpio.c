@@ -79,8 +79,16 @@ int gpio_export(unsigned int gpio)
 	debug("\n /sys/class/gpio/export %d \n",gpio);
 
 	if (write(fd, str_gpio, len) < 0 )
-		return -1;
-		
+	{
+		/* WHAT: a pin that is already exported is fine.
+		 * WHY: other tools (e.g. WiringBP wiringPiISR, "gpio edge") leave the
+		 * pin exported; the kernel then answers EBUSY and event detection
+		 * failed with "Failed to add edge detection". The fd also leaked. */
+		int err = errno;
+		close(fd);
+		return (err == EBUSY) ? 0 : -1;
+	}
+
 	close(fd);
 	return 0;
 }

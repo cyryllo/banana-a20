@@ -34,6 +34,7 @@ static int gpio_warnings = 1;
 struct py_callback
 {
    unsigned int gpio;
+   int channel;            /* pin number as given by the program (BOARD or BCM) */
    PyObject *py_cb;
    struct py_callback *next;
 };
@@ -263,7 +264,9 @@ static void run_py_callbacks(unsigned int gpio)
       if (cb->gpio == gpio) {
          // run callback
          gstate = PyGILState_Ensure();
-         result = PyObject_CallFunction(cb->py_cb, "i", gpio);
+         /* WHAT: pass the channel in the program's numbering (like RPi.GPIO),
+          * not the internal kernel GPIO number. */
+         result = PyObject_CallFunction(cb->py_cb, "i", cb->channel);
          if (result == NULL && PyErr_Occurred()){
             PyErr_Print();
             PyErr_Clear();
@@ -275,7 +278,7 @@ static void run_py_callbacks(unsigned int gpio)
    }
 }
 
-static int add_py_callback(unsigned int gpio, PyObject *cb_func)
+static int add_py_callback(unsigned int gpio, int channel, PyObject *cb_func)
 {
    struct py_callback *new_py_cb;
    struct py_callback *cb = py_callbacks;	
@@ -290,6 +293,7 @@ static int add_py_callback(unsigned int gpio, PyObject *cb_func)
    new_py_cb->py_cb = cb_func;
    Py_XINCREF(cb_func);         // Add a reference to new callback
    new_py_cb->gpio = gpio;
+   new_py_cb->channel = channel;
    new_py_cb->next = NULL;
    if (py_callbacks == NULL) {
       py_callbacks = new_py_cb;
@@ -337,7 +341,7 @@ static PyObject *py_add_event_callback(PyObject *self, PyObject *args, PyObject 
       return NULL;
    }
 
-   if (add_py_callback(sys_gpio, cb_func) != 0)
+   if (add_py_callback(sys_gpio, channel, cb_func) != 0)
       return NULL;
 
    Py_RETURN_NONE;
@@ -425,7 +429,7 @@ static PyObject *py_add_event_detect(PyObject *self, PyObject *args, PyObject *k
    }
 
    if (cb_func != NULL)
-      if (add_py_callback(sys_gpio, cb_func) != 0)
+      if (add_py_callback(sys_gpio, channel, cb_func) != 0)
          return NULL;
 
    Py_RETURN_NONE;
@@ -598,6 +602,9 @@ static PyObject *py_gpio_function(PyObject *self, PyObject *args)
 	{
 		case 0 : f = INPUT; break;
 		case 1 : f = OUTPUT; break;
+		/* WHAT: A20 function 6 = EINT, an input with interrupts.
+		 * WHY: the kernel switches the pin to it while edge detection is on. */
+		case 6 : f = (v == BANANAPRO) ? INPUT : MODE_UNKNOWN; break;
 		// ALT 0
 		case 4 :if(v == BANANAPRO){ //a20
 			 switch (gpio)
@@ -721,12 +728,18 @@ PyMODINIT_FUNC initGPIO(void)
 #endif
 
    if (get_cpuinfo_revision(cpuRev) == NULL)
+   {
+      /* WHAT: clear error on an unsupported board.
+       * WHY: returning NULL without an exception gave Python's unclear
+       * "SystemError: initialization of GPIO failed without raising an exception". */
+      PyErr_SetString(PyExc_RuntimeError, "LMK.GPIO: not a Banana Pro/Pi (Allwinner A20) or LeMaker Guitar, see /proc/cpuinfo");
 #if PY_MAJOR_VERSION > 2
 	return NULL;
 #else
 	return;
 #endif
-   
+   }
+
     revision = get_lmk_revision();
     debug("BOARD: revision(%d)\n",revision);
 	
@@ -737,7 +750,7 @@ PyMODINIT_FUNC initGPIO(void)
 
    if (revision == -1)
    {
-      PyErr_SetString(PyExc_RuntimeError, "This module can only be run on a Raspberry Pi!");
+      PyErr_SetString(PyExc_RuntimeError, "LMK.GPIO: unknown board revision");
       setup_error = 1;
 #if PY_MAJOR_VERSION > 2
       return NULL;
