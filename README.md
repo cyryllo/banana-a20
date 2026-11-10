@@ -21,7 +21,7 @@ The images also work on the original Banana Pi (non-"Pro").
 
 ## Quick start (recommended)
 
-1. Download an image from [Releases](https://github.com/cyryllo/fex_configuration/releases):
+1. Download an image from [Releases](https://github.com/cyryllo/banana-a20/releases):
    - **`..._xfce_desktop.img.xz`**: XFCE desktop, 7" panel enabled (`lemaker-lcd7`, for use without an HDMI monitor)
    - **`..._minimal.img.xz`**: no desktop, LCD disabled (HDMI only), a base for your own setup
 2. Write it to an SD card with [USBImager](https://gitlab.com/bztsrc/usbimager) or balenaEtcher.
@@ -107,8 +107,8 @@ grep -A1 -i edt /proc/bus/input/devices
 Requires Armbian `current` (6.18) for the Banana Pro (`bananapipro`, DTB `sun7i-a20-bananapro.dtb`) and `device-tree-compiler`.
 
 ```bash
-git clone https://github.com/cyryllo/fex_configuration.git
-cd fex_configuration
+git clone https://github.com/cyryllo/banana-a20.git
+cd banana-a20
 
 # overlays for all panels + panel switch command
 for f in overlays/bananapro-*.dts; do sudo armbian-add-overlay "$f"; done
@@ -135,7 +135,7 @@ Rebuild it after every kernel update. Replace `v6.18` with your kernel version i
 This unpatched driver fails at boot (see [How it works](#how-it-works)). Either apply the patch from this repository to `edt-ft5x06.c` before `make`:
 
 ```bash
-patch -p4 < ~/fex_configuration/armbian-build/userpatches/kernel/archive/sunxi-6.18/edt-ft5x06-retry-identify-after-bus-recovery.patch
+patch -p4 < ~/banana-a20/armbian-build/userpatches/kernel/archive/sunxi-6.18/edt-ft5x06-retry-identify-after-bus-recovery.patch
 ```
 
 or install the retry service, which binds the driver again after boot:

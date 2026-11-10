@@ -46,7 +46,7 @@ Bugs 1 and 2 seem to date back to the touch rewrite in #15282 (2023).
 Side note: nothing in the build system defines `UDEV_TOUCH_SUPPORT` (configure, `Makefile.common`), so distribution builds have no touchscreen support in udev at all. Maybe it could become a configure option once these bugs are fixed.
 
 I have patches against v1.20.0 tested on hardware and can open a PR against master if that helps:
-https://github.com/cyryllo/fex_configuration/tree/master/armbian-build/konsola/latki-retroarch (0001, 0002, 0007)
+https://github.com/cyryllo/banana-a20/tree/arkada20-v1.0-trixie-6.18.62/armbian-build/konsola/latki-retroarch (0001, 0002, 0007)
 
 **Expected behavior:** A tap selects a menu entry, the pointer is pressed while a finger is down and released when the last finger is lifted.
 
@@ -118,7 +118,7 @@ static bool gfx_ctx_drm_get_metrics(void *data,
 }
 ```
 
-Patch against v1.20.0, tested on hardware (0003): https://github.com/cyryllo/fex_configuration/tree/master/armbian-build/konsola/latki-retroarch . I can open a PR against master.
+Patch against v1.20.0, tested on hardware (0003): https://github.com/cyryllo/banana-a20/tree/arkada20-v1.0-trixie-6.18.62/armbian-build/konsola/latki-retroarch . I can open a PR against master.
 
 **Expected behavior:** The menu gets the real DPI of the display in KMS mode, touch drag and swipe gestures work.
 

@@ -32,8 +32,8 @@ The build is based on the official [Armbian build framework](https://docs.armbia
 ## Images with the official overlays (since v0.6)
 
 ```bash
-git clone https://github.com/cyryllo/fex_configuration.git
-cd fex_configuration/armbian-build
+git clone https://github.com/cyryllo/banana-a20.git
+cd banana-a20/armbian-build
 ./zbuduj-obraz-pr.sh --ekran 7          # XFCE, overlays=lemaker-lcd7
 ./zbuduj-obraz-pr.sh --pulpit brak      # minimal, LCD disabled
 ```
@@ -58,8 +58,8 @@ The path to the build directory must not contain spaces (an Armbian requirement)
 ## Quick way: the script
 
 ```bash
-git clone https://github.com/cyryllo/fex_configuration.git
-cd fex_configuration/armbian-build
+git clone https://github.com/cyryllo/banana-a20.git
+cd banana-a20/armbian-build
 ./zbuduj-obraz.sh
 ```
 
@@ -89,7 +89,7 @@ The same steps the script performs:
 git clone --depth 1 https://github.com/armbian/build.git ~/armbian-build
 
 # 2. Our files into userpatches
-cd ~/fex_configuration          # wherever you cloned this repository
+cd ~/banana-a20          # wherever you cloned this repository
 mkdir -p ~/armbian-build/userpatches/overlay/lemaker-lcd
 cp armbian-build/userpatches/config-bananapro-lcd.conf ~/armbian-build/userpatches/
 cp armbian-build/userpatches/customize-image.sh        ~/armbian-build/userpatches/

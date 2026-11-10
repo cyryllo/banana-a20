@@ -1,19 +1,22 @@
 #!/bin/bash
-# Buduje obraz Armbian dla Banana Pro z oficjalnego armbian/build plus nasze
-# PR-y z obsluga ekranow LeMaker (jeszcze nie scalone):
+# Buduje obraz Armbian dla Banana Pro z oficjalnego armbian/build (domyslnie
+# galaz main). Obsluga ekranow LeMaker jest tam od 2026-11-10 (nasze PR-y,
+# wszystkie scalone):
 #   #11293 sunxi: enable the EDT FT5x06 touchscreen driver
 #   #11294 sunxi: edt-ft5x06: retry identification after I2C bus recovery
 #   #11296 sunxi: add overlays for the LeMaker 5" and 7" LCD panels (A20)
 #
-# Wynik odpowiada oficjalnemu Armbian po scaleniu PR-ow: ekran wlacza sie
-# linia overlays=lemaker-lcd7 (lcd5, lcd7-hdmi) w /boot/armbianEnv.txt,
-# bez skryptu lemaker-lcd i bez user_overlays (do tego jest zbuduj-obraz.sh).
+# Ekran wlacza sie jak w oficjalnym Armbian: linia overlays=lemaker-lcd7
+# (lcd5, lcd7-hdmi) w /boot/armbianEnv.txt, bez skryptu lemaker-lcd i bez
+# user_overlays (do tego jest starszy zbuduj-obraz.sh).
+# Nazwa "-pr" zostala z czasow, gdy skrypt laczyl galezie PR z forka.
 #
 # Przyklady:
 #   ./zbuduj-obraz-pr.sh                     # XFCE, LCD wylaczony
 #   ./zbuduj-obraz-pr.sh --ekran 7           # XFCE, overlays=lemaker-lcd7
 #   ./zbuduj-obraz-pr.sh --pulpit brak       # minimal bez pulpitu, LCD wylaczony
 #   ./zbuduj-obraz-pr.sh --pulpit brak --ekran 7 --konsola   # konsola do gier (RetroArch)
+#   ./zbuduj-obraz-pr.sh --armbian 4ebf24f5fe ...  # konkretny commit armbian/build
 
 set -euo pipefail
 
@@ -25,10 +28,10 @@ SKRYPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # CO: pliki konsoli Arkada20 (katalog arkada20/ w glownym katalogu repozytorium).
 KONSOLA_DIR="$(dirname "${SKRYPT_DIR}")/arkada20"
 BUILD_DIR="${HOME}/armbian-build"
-FORK="https://github.com/cyryllo/build-armbian.git"
-# DLACZEGO te trzy galezie, a nie numery PR: galezie zawieraja dokladnie to,
-# co jest w PR-ach, a baza (armbian/build 23cdcc2) jest ta sama dla wszystkich.
-GALEZIE=(sunxi-edt-ft5x06 sunxi-edt-ft5x06-retry-identify sunxi-lemaker-lcd-overlays)
+ARMBIAN_REPO="https://github.com/armbian/build.git"
+# DLACZEGO mozliwosc podania commita: main sie zmienia, a przypiety commit
+# pozwala odtworzyc dokladnie ten sam obraz (np. dla wydania).
+ARMBIAN_REF="main"
 
 pomoc() {
 	cat <<- EOF
@@ -40,6 +43,7 @@ pomoc() {
 		                      (tylko z --pulpit brak; najpierw ../arkada20/zbuduj-rdzenie.sh)
 		      --gry DIR       gry dolaczone do obrazu konsoli, DIR/<system>/plik (np. DIR/mame2003/gra.zip);
 		                      obrazu z grami nie publikuj (prawa autorskie)
+		  -a, --armbian REF   galaz, tag albo commit armbian/build (domyslnie main)
 		  -k, --katalog DIR   katalog armbian/build (domyslnie ${BUILD_DIR})
 		  -h, --pomoc         ta pomoc
 	EOF
@@ -57,6 +61,7 @@ while [[ $# -gt 0 ]]; do
 		-p | --pulpit) PULPIT="${2:-}"; shift 2 ;;
 		-g | --konsola) KONSOLA="yes"; shift ;;
 		--gry) GRY="${2:-}"; shift 2 ;;
+		-a | --armbian) ARMBIAN_REF="${2:-}"; shift 2 ;;
 		-k | --katalog) BUILD_DIR="${2:-}"; shift 2 ;;
 		-h | --pomoc) pomoc; exit 0 ;;
 		--) shift; EXTRA=("$@"); break ;;
@@ -109,15 +114,16 @@ wroc() {
 }
 trap wroc EXIT
 
-# CO: polaczenie trzech galezi PR w lokalna galaz lemaker-prs.
-echo ">> Pobieram galezie PR z ${FORK}"
-git fetch -q "${FORK}" "${GALEZIE[@]}"
-# DLACZEGO FETCH_HEAD: git zapisuje tam pobrane galezie w kolejnosci z polecenia.
-mapfile -t SHA < <(awk '{print $1}' .git/FETCH_HEAD)
-[[ ${#SHA[@]} -eq ${#GALEZIE[@]} ]] || blad "nie udalo sie pobrac wszystkich galezi PR"
-git checkout -q -B lemaker-prs "${SHA[0]}"
-git -c user.name=zbuduj-obraz-pr -c user.email=zbuduj-obraz-pr@localhost merge -q --no-edit "${SHA[@]:1}"
-echo ">> Armbian: $(git log -1 --format=%h HEAD) = armbian/build $(git merge-base "${SHA[0]}" "${SHA[1]}" | cut -c1-9) + PR-y"
+# CO: pobranie oficjalnego armbian/build (ARMBIAN_REF) do lokalnej galezi zbuduj-obraz-pr.
+echo ">> Pobieram armbian/build ${ARMBIAN_REF}"
+git fetch -q "${ARMBIAN_REPO}" "${ARMBIAN_REF}" || blad "nie udalo sie pobrac armbian/build ${ARMBIAN_REF}"
+git checkout -q -B zbuduj-obraz-pr FETCH_HEAD
+# CO: kontrola, czy ta wersja Armbiana ma juz obsluge ekranow LeMaker.
+# DLACZEGO: ze starszego commita (sprzed 2026-11-10) wyszedlby obraz bez dotyku i nakladek.
+grep -q '^CONFIG_TOUCHSCREEN_EDT_FT5X06=m' config/kernel/linux-sunxi-current.config &&
+	compgen -G "patch/kernel/archive/sunxi-*/overlay_32/sun7i-a20-lemaker-lcd7.dtso" > /dev/null ||
+	blad "armbian/build ${ARMBIAN_REF} nie ma jeszcze obslugi ekranow LeMaker (PR #11293, #11296)"
+echo ">> Armbian: armbian/build $(git log -1 --format='%h z %cs' HEAD)"
 
 # CO: osobny katalog userpatches tylko dla tego obrazu.
 # DLACZEGO: w domyslnym userpatches/ leza pliki zbuduj-obraz.sh (customize-image.sh

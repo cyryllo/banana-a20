@@ -1,5 +1,5 @@
 #!/bin/bash
-# lemaker-lcd: skrypt z repozytorium cyryllo/fex_configuration
+# lemaker-lcd: skrypt z repozytorium cyryllo/banana-a20
 #
 # CO: wgrywa do obrazu nakladki ekranow LeMaker i wlacza wybrana.
 # Armbian uruchamia go w chroot obrazu tuz przed jego zamknieciem.
