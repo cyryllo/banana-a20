@@ -303,7 +303,7 @@ class _callback_thread(threading.Thread):
       """
 
       RECV_SIZ = 16
-      MSG_SIZ = 16 # 4 bytes of padding in each message
+      MSG_SIZ = 16 # gpio16 (2 bytes) and 2 bytes of padding at the end
 
       buf = bytes()
       while self.go:
@@ -314,8 +314,12 @@ class _callback_thread(threading.Thread):
          while self.go and (len(buf) - offset) >= MSG_SIZ:
             msgbuf = buf[offset:offset + MSG_SIZ]
             offset += MSG_SIZ
-            tick, chip, gpio, level, flags, pad = (
-               struct.unpack('QBBBBI', msgbuf))
+            tick, chip, gpio, level, flags, gpio16, pad = (
+               struct.unpack('QBBBBHH', msgbuf))
+            # gpio is only the low 8 bits; gpio16 is the full offset
+            # (older servers leave padding there, so check it first)
+            if (gpio16 & 0xFF) == gpio:
+               gpio = gpio16
 
             if flags == 0:
                for cb in self.callbacks:

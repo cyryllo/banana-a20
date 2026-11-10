@@ -39,6 +39,9 @@ For more information, please refer to <http://unlicense.org/>
 #include "lgGpio.h"
 #include "lgPthAlerts.h"
 
+/* the Python modules and rgpio read reports as 16-byte records */
+_Static_assert(sizeof(lgGpioReport_t) == 16, "lgGpioReport_t must stay 16 bytes");
+
 #define LG_MAX_ALERTS 2000
 #define LG_GPIO_MAX_ALERTS_PER_READ 128
 
@@ -323,6 +326,7 @@ void xDebWatEvt(
             aBuf[*cp].report.level = p->last_evt_lv;
             aBuf[*cp].report.chip = p->chip->gpiochip;
             aBuf[*cp].report.gpio = p->gpio;
+            aBuf[*cp].report.gpio16 = p->gpio; /* full offset, gpio is 8-bit */
             aBuf[*cp].report.flags = 0;
             aBuf[*cp].nfyHandle = p->nfyHandle;
 
@@ -370,6 +374,7 @@ void xDebWatEvt(
          aBuf[*cp].report.level = LG_TIMEOUT;
          aBuf[*cp].report.chip = p->chip->gpiochip;
          aBuf[*cp].report.gpio = p->gpio;
+         aBuf[*cp].report.gpio16 = p->gpio; /* full offset, gpio is 8-bit */
          aBuf[*cp].report.flags = 0;
          aBuf[*cp].nfyHandle = p->nfyHandle;
 
@@ -400,6 +405,7 @@ void xDebWatEvt(
          aBuf[*cp].report.level = p->last_evt_lv; 
          aBuf[*cp].report.chip = p->chip->gpiochip;
          aBuf[*cp].report.gpio = p->gpio;
+         aBuf[*cp].report.gpio16 = p->gpio; /* full offset, gpio is 8-bit */
          aBuf[*cp].report.flags = 0;
          aBuf[*cp].nfyHandle = p->nfyHandle;
 

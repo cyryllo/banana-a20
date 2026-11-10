@@ -1794,6 +1794,7 @@ typedef struct
    uint8_t gpio;       // offset into gpio device
    uint8_t level;      // 0=low, 1=high, 2=timeout
    uint8_t flags;      // none currently defined
+   uint16_t gpio16;    // full offset (gpio holds only the low 8 bits)
 } lgGpioReport_t;
 . .
 

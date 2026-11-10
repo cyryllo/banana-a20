@@ -359,7 +359,7 @@ static void dispatch_notification(int sbc, lgGpioReport_t *r)
 
       while (p)
       {
-         if ((p->sbc == sbc) && (p->chip == r->chip) && (p->gpio == r->gpio))
+         if ((p->sbc == sbc) && (p->chip == r->chip) && (p->gpio == LG_REPORT_GPIO(r)))
          {
             (p->f)(sbc, p->chip, p->gpio, r->level, r->timestamp, p->user);
          }

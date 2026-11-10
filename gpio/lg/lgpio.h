@@ -384,7 +384,16 @@ typedef struct
    uint8_t gpio; /* offset into gpio device */
    uint8_t level; /* 0=low, 1=high, 2=watchdog */
    uint8_t flags; /* none defined, ignore report if non-zero */
+   /* full offset into gpio device. gpio above only holds the low 8 bits,
+      chips with more than 256 lines (e.g. Allwinner A20, 288) need this.
+      Uses the former padding, the size of the struct is unchanged. */
+   uint16_t gpio16;
 } lgGpioReport_t;
+
+/* full gpio offset of a report: gpio16 when it agrees with the low 8 bits
+   in gpio (reports from older versions have padding there), else gpio */
+#define LG_REPORT_GPIO(r) \
+   ((((r)->gpio16 & 0xFF) == (r)->gpio) ? (r)->gpio16 : (r)->gpio)
 
 typedef struct lgGpioAlert_s
 {
@@ -1353,7 +1362,7 @@ void afunc(int e, lgGpioAlert_p evt, void *data)
    {
       printf("u=%d t=%"PRIu64" c=%d g=%d l=%d f=%d (%d of %d)\n",
          userdata, evt[i].report.timestamp, evt[i].report.chip,
-         evt[i].report.gpio, evt[i].report.level,
+         evt[i].report.gpio16, evt[i].report.level,
          evt[i].report.flags, i+1, e);
    }
 }
@@ -1427,7 +1436,7 @@ void afunc(int e, lgGpioAlert_p evt, void *data)
    {
       printf("u=%d t=%"PRIu64" c=%d g=%d l=%d f=%d (%d of %d)\n",
          userdata, evt[i].report.timestamp, evt[i].report.chip,
-         evt[i].report.gpio, evt[i].report.level,
+         evt[i].report.gpio16, evt[i].report.level,
          evt[i].report.flags, i+1, e);
    }
 }
@@ -2690,6 +2699,7 @@ typedef struct
    uint8_t gpio;       // offset into gpio device
    uint8_t level;      // 0=low, 1=high, 2=watchdog
    uint8_t flags;      // none defined, ignore report if non-zero
+   uint16_t gpio16;    // full offset (gpio holds only the low 8 bits)
 } lgGpioReport_t;
 . .
 
