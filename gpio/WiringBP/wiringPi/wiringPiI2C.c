@@ -53,6 +53,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include "wiringPi.h"
 #include "wiringPiI2C.h"
@@ -232,16 +233,16 @@ int wiringPiI2CSetup (const int devId)
   if (rev == BPRVER)
   {
     static char path [32] ;
-    char link [256], sysPath [64] ;
+    char link [PATH_MAX], sysPath [64] ;
     int n ;
-    ssize_t len ;
 
     for (n = 0 ; n < 16 ; ++n)
     {
+      // WHY realpath: the "device" link is relative (../../i2c-1), the full
+      //	path contains the controller: /sys/devices/platform/soc/1c2b400.i2c/i2c-1
       sprintf (sysPath, "/sys/class/i2c-dev/i2c-%d/device", n) ;
-      if ((len = readlink (sysPath, link, sizeof (link) - 1)) < 0)
+      if (realpath (sysPath, link) == NULL)
         continue ;
-      link [len] = 0 ;
       if (strstr (link, "1c2b400.i2c") != NULL)
       {
         sprintf (path, "/dev/i2c-%d", n) ;
