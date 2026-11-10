@@ -8,7 +8,7 @@ Wszystko, czego potrzeba do korzystania ze złącza 40 pinów **LeMaker Banana P
 - standardowe narzędzia Linuksa [libgpiod](#1-libgpiod-standardowy-sposób-linuksa) (`gpioset`, `gpiomon`, moduł Pythona `gpiod`)
 - [WiringBP](#2-wiringbp-biblioteka-c-i-polecenie-gpio): WiringPi przerobione dla Banana Pro (biblioteka C i polecenie `gpio`, `gpio readall`)
 - [LMK.GPIO](#3-lmkgpio-python-api-rpigpio): RPi.GPIO przerobione dla Banana Pro (Python)
-- [lg (lgpio, rgpio)](#4-lg-lgpio-i-rgpio-zamiast-pigpio): następca pigpio od tego samego autora, dla każdej płytki z Linuksem: programowy PWM i serwa na dowolnym pinie, powiadomienia o zmianach stanu, sterowanie przez sieć
+- [lg (lgpio, rgpio)](#4-lg-lgpio-i-rgpio-zamiast-pigpio): następca pigpio z tego samego źródła (joan2937), dla każdej płytki z Linuksem: programowy PWM i serwa na dowolnym pinie, powiadomienia o zmianach stanu, sterowanie przez sieć
 - [przykładowe programy](examples/) dla nich wszystkich i opis włączania [I2C, SPI, UART i PWM](#i2c-spi-uart-i-sprzętowy-pwm)
 
 WiringBP i LMK.GPIO napisał LeMaker dla starego jądra sunxi 3.4 i nie były aktualizowane od lat 2016-2019. Wersje w tym repozytorium są poprawione pod jądro mainline i Pythona 3.13 (zobacz [Zmiany](#zmiany-względem-oryginalnych-wersji)). lg wymagał jednej poprawki dla A20 (numery GPIO powyżej 255). Wszystko na tej stronie sprawdziłem na Banana Pro z Armbianem 6.18.62 (listopad 2026).
@@ -346,7 +346,7 @@ Stare testy LeMakera są w [LMK.GPIO/test/](LMK.GPIO/test/).
 
 [pigpio](https://github.com/joan2937/pigpio) nie ruszy na Banana Pro: jego precyzyjne taktowanie bierze się z kontrolera DMA procesora Raspberry Pi (taktowanego przez jego układ PWM/PCM, z pamięcią od VideoCore), a A20 nie ma czym tego zastąpić. DMA w A20 nie potrafi wykonywać niekończących się łańcuchów transferów, a GPIO w A20 ma jeden rejestr danych na bank zamiast osobnych rejestrów do ustawiania i zerowania pinów. pigpio nie jest też już rozwijane (ostatnie wydanie v79, marzec 2021) i nie działa nawet na Raspberry Pi 5.
 
-Jego autor (joan2937) napisał następcę dla każdej płytki z Linuksem: **[lg](https://github.com/joan2937/lg)**, dołączony tutaj w [lg/](lg/). Korzysta wyłącznie ze standardowego interfejsu jądra (`/dev/gpiochip`), więc działa na A20 bez zmian, poza jedną poprawką z tego repozytorium (powiadomienia na numerach GPIO powyżej 255, zobacz [Zmiany](#zmiany-względem-oryginalnych-wersji), zgłoszone jako [lg#49](https://github.com/joan2937/lg/issues/49)). Zawiera:
+Ta sama osoba (joan2937) przygotowała następcę dla każdej płytki z Linuksem: **[lg](https://github.com/joan2937/lg)**, dołączony tutaj w [lg/](lg/). Korzysta wyłącznie ze standardowego interfejsu jądra (`/dev/gpiochip`), więc działa na A20 bez zmian, poza jedną poprawką z tego repozytorium (powiadomienia na numerach GPIO powyżej 255, zobacz [Zmiany](#zmiany-względem-oryginalnych-wersji), zgłoszone jako [lg#49](https://github.com/joan2937/lg/issues/49)). Zawiera:
 
 - **lgpio**: bibliotekę C i moduł Pythona: GPIO, powiadomienia o zmianach stanu ze znacznikami czasu z jądra, programowy PWM, impulsy serw i ciągi impulsów na dowolnym pinie, I2C, SPI, port szeregowy,
 - **rgpiod** + **rgpio**: demona na płytce i klienta C/Python do sterowania pinami z innego komputera przez sieć (jak `pigpiod`), oraz polecenie powłoki `rgs`.
@@ -485,7 +485,7 @@ WiringBP ([LeMaker/WiringBP](https://github.com/LeMaker/WiringBP), gałąź `ban
 | LMK.GPIO | płytka nierozpoznawana (`Hardware : Allwinner sun7i (A20) Family`) | szukanie `sun7i` w całej linii |
 | LMK.GPIO | nie kompiluje się z Pythonem 3.13, GCC 14 i bez distutils | poprawki kompilacji, setuptools |
 | LMK.GPIO | funkcje zdarzeń dostawały wewnętrzny numer zamiast numeru pinu, wykrywanie zboczy zawodziło, gdy pin był wyeksportowany przez inne narzędzie, niejasny błąd na innych płytkach | poprawione |
-| lg | powiadomienia trzymały numer GPIO w 8 bitach: pin 13 (274) przychodził jako 18, funkcje Pythona i rgpio dla pinów powyżej 255 nigdy się nie wywoływały | pełny numer w nowym polu `gpio16` (dawne wypełnienie, ten sam rozmiar struktury), używany przez moduły Pythona i rgpio; zgłoszone autorowi jako [lg#49](https://github.com/joan2937/lg/issues/49) |
+| lg | powiadomienia trzymały numer GPIO w 8 bitach: pin 13 (274) przychodził jako 18, funkcje Pythona i rgpio dla pinów powyżej 255 nigdy się nie wywoływały | pełny numer w nowym polu `gpio16` (dawne wypełnienie, ten sam rozmiar struktury), używany przez moduły Pythona i rgpio; zgłoszone w repozytorium lg jako [lg#49](https://github.com/joan2937/lg/issues/49) |
 
 Bez zmian i niesprawdzone: gałąź WiringBP dla Banana Pi (bez „Pro”, złącze 26 pinów), kod dla LeMaker Guitar, sterowniki płytek rozszerzeń w `WiringBP/devLib/` i większość starych przykładów.
 
@@ -493,5 +493,5 @@ Bez zmian i niesprawdzone: gałąź WiringBP dla Banana Pi (bez „Pro”, złą
 
 - WiringBP: GNU LGPL v3 ([WiringBP/COPYING.LESSER](WiringBP/COPYING.LESSER)), na bazie WiringPi Gordona Hendersona.
 - LMK.GPIO: na bazie RPi.GPIO Bena Crostona. Pliki źródłowe i `setup.py` mają licencję MIT (copyright LeMaker Team), plik [LMK.GPIO/LICENSE](LMK.GPIO/LICENSE) to GPL v2; obie pozwalają używać, zmieniać i udostępniać, GPL v2 wymaga udostępnienia źródeł razem z programami z nich zbudowanymi.
-- lg: domena publiczna ([The Unlicense](lg/UNLICENCE)), autor joan2937.
+- lg: domena publiczna ([The Unlicense](lg/UNLICENCE)), joan2937.
 - Grafika pinów, przykłady i ta dokumentacja: na tych samych zasadach co reszta repozytorium.
