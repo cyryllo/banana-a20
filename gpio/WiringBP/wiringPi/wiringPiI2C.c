@@ -52,6 +52,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
 #include "wiringPi.h"
 #include "wiringPiI2C.h"
@@ -222,6 +223,34 @@ int wiringPiI2CSetup (const int devId)
   const char *device ;
 
   rev = piBoardRev () ;
+
+  // WHAT: Banana Pro: the I2C bus on header pins 3/5 is the A20 TWI2
+  //	controller at 0x01c2b400, find its /dev/i2c-N by that address.
+  // WHY: the mainline kernel numbers buses in probe order (with Armbian
+  //	usually i2c-1, i2c-3 is the HDMI DDC bus), the old fixed name
+  //	/dev/i2c-3 opened the wrong bus.
+  if (rev == BPRVER)
+  {
+    static char path [32] ;
+    char link [256], sysPath [64] ;
+    int n ;
+    ssize_t len ;
+
+    for (n = 0 ; n < 16 ; ++n)
+    {
+      sprintf (sysPath, "/sys/class/i2c-dev/i2c-%d/device", n) ;
+      if ((len = readlink (sysPath, link, sizeof (link) - 1)) < 0)
+        continue ;
+      link [len] = 0 ;
+      if (strstr (link, "1c2b400.i2c") != NULL)
+      {
+        sprintf (path, "/dev/i2c-%d", n) ;
+        return wiringPiI2CSetupInterface (path, devId) ;
+      }
+    }
+    return wiringPiI2CSetupInterface ("/dev/i2c-1", devId) ;
+  }
+
 /*modify for BananaPro by LeMaker team*/
   if (rev == 1) 
     device = "/dev/i2c-0" ;

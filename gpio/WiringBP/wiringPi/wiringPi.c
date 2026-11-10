@@ -892,8 +892,10 @@ void sunxi_pwm_set_clk(int clk)
 	 
 	// sunxi_pwm_set_enable(0);
 	 val = readl(SUNXI_PWM_CTRL_REG);
-	 //clear clk to 0
-	 val &= 0xf801f0;
+	 // WHAT: clear only the channel 1 prescaler (bits 15-18).
+	 // WHY: the old mask 0xf801f0 also cleared the channel 0 prescaler, and on
+	 //	the mainline kernel channel 0 (PB2) drives the LCD backlight.
+	 val &= ~(0xf << 15);
 	 val |= ((clk & 0xf) << 15);  //todo check wether clk is invalid or not
 	 writel(val, SUNXI_PWM_CTRL_REG);
 	 sunxi_pwm_set_enable(1);
@@ -1025,9 +1027,12 @@ void sunxi_set_gpio_mode(int pin,int mode)
 		   regval = readl(phyaddr);
 		   if (wiringPiDebug)
 				printf("<<<<<PWM mode set over reg val: 0x%x\n",regval);
-		   //clear all reg
-		   writel(0,SUNXI_PWM_CTRL_REG); 
-		   writel(0,SUNXI_PWM_CH0_PERIOD); 
+		   // WHAT: reset only PWM channel 1 (bits 15-24 of the control register
+		   //	and its period register); pin 12 (PI3) is PWM1.
+		   // WHY: the old code wrote 0 to the whole control register and to the
+		   //	channel 0 period, which switched off PWM0 = the LCD backlight
+		   //	driven by the kernel (screen went dark, checked 2026-11-10).
+		   writel(readl(SUNXI_PWM_CTRL_REG) & ~0x1ff8000, SUNXI_PWM_CTRL_REG); 
 		   writel(0,SUNXI_PWM_CH1_PERIOD); 
 
 		   //set default M:S to 1/2
