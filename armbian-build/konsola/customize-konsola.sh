@@ -26,7 +26,7 @@ apt-get install -y --no-install-recommends \
 	retroarch-assets libretro-core-info \
 	libasound2t64 libfreetype6 libudev1 libgbm1 libdrm2 libgles2 libegl1 libgl1-mesa-dri \
 	libxkbcommon0 xkb-data \
-	alsa-utils samba curl ca-certificates network-manager
+	alsa-utils samba curl ca-certificates network-manager avahi-daemon libnss-mdns wsdd2
 
 # CO: nasz RetroArch (zbuduj-retroarch.sh): KMS + GLES, udev z dotykiem, Wi-Fi przez nmcli.
 install -m 0755 "${SRC}/retroarch-bin/retroarch" /usr/local/bin/retroarch
@@ -95,26 +95,42 @@ EOF
 # brakujace katalogi przy kazdym starcie, istniejacych nie rusza.
 {
 	echo "d ${ROMS} 0755 root root -"
-	for d in nes snes gb gba megadrive mastersystem gamegear psx mame2003 fbneo bios zapisy; do
+	for d in nes snes gb gba megadrive mastersystem gamegear psx mame2003 fbneo bios zapisy zrzuty; do
 		echo "d ${ROMS}/${d} 0755 root root -"
 	done
 	# DLACZEGO: bez tego katalogu RetroArch nie zapisuje logu (log_to_file).
 	echo "d /root/.config/retroarch/logs 0755 root root -"
 } > /etc/tmpfiles.d/konsola-roms.conf
 
-# CO: udzial sieciowy \\<nazwa_plytki>\roms bez hasla, jak w Lakce.
-# DLACZEGO force user = root: RetroArch dziala jako root, pliki z sieci
-# musza miec tego samego wlasciciela. Udzial jest widoczny tylko w sieci lokalnej.
-cat >> /etc/samba/smb.conf <<- 'EOF'
+# CO: nazwa w sieci bez znajomosci IP: avahi-daemon (mDNS: arkada20.local, Linux,
+# Windows 10/11, macOS, telefony) i wsdd2 (konsola widoczna w "Sieci" Eksploratora
+# Windows). DLACZEGO: sama Samba rozglasza nazwe tylko przez NetBIOS (nmbd), ktory
+# nowe Windowsy czesto maja wylaczony, a Linux go nie uzywa.
+install -m 0644 "${SRC}/avahi-samba.service" /etc/avahi/services/samba.service
+systemctl enable avahi-daemon.service wsdd2.service
 
-	[roms]
-	   comment = Gry dla RetroArch
-	   path = /home/roms
-	   browseable = yes
-	   read only = no
-	   guest ok = yes
-	   force user = root
-EOF
+# CO: udzialy sieciowe bez hasla, jak w Lakce: \\arkada20\roms (gry), bios,
+# zapisy (zapisy gier i stany) i zrzuty (zrzuty ekranu).
+# DLACZEGO osobne udzialy, choc bios/zapisy/zrzuty leza w roms: od razu widac je
+# w otoczeniu sieciowym, np. do kopii zapasowej zapisow.
+# DLACZEGO force user = root: RetroArch dziala jako root, pliki z sieci
+# musza miec tego samego wlasciciela. Udzialy sa widoczne tylko w sieci lokalnej.
+# Bez udzialu z konfiguracja RetroArch: zapis bez hasla do konfiguracji mogl by
+# zablokowac konsole.
+for udzial in "roms:/home/roms:Gry dla RetroArch" "bios:/home/roms/bios:BIOS dla emulatorow" \
+	"zapisy:/home/roms/zapisy:Zapisy gier i stany" "zrzuty:/home/roms/zrzuty:Zrzuty ekranu"; do
+	IFS=: read -r nazwa sciezka opis <<< "${udzial}"
+	cat >> /etc/samba/smb.conf <<- EOF
+
+		[${nazwa}]
+		   comment = ${opis}
+		   path = ${sciezka}
+		   browseable = yes
+		   read only = no
+		   guest ok = yes
+		   force user = root
+	EOF
+done
 
 # CO: konfiguracja RetroArch i usluga uruchamiajaca go na ekranie.
 install -d /root/.config/retroarch
@@ -151,6 +167,10 @@ useradd -m -s /bin/bash -G sudo,audio,video,input,render,plugdev,netdev gracz
 echo "gracz:gracz" | chpasswd
 chage -d 0 gracz
 passwd -l root
+# CO: konto Samby gracz/gracz do udzialow sieciowych.
+# DLACZEGO: Windows 11 (od 24H2) blokuje dostep goscia, wymaga loginu i hasla.
+# Samba ma wlasne hasla, niezalezne od systemowych (zmiana: sudo smbpasswd gracz).
+printf 'gracz\ngracz\n' | smbpasswd -a -s gracz
 # CO: katalog domowy gracza tworzony przy starcie z /etc/skel (C = kopiuj, jesli brak).
 # DLACZEGO: Armbian czysci /home po customize-image, wiec useradd -m tu nie wystarcza
 # (sprawdzone: w gotowym obrazie /home byl pusty).

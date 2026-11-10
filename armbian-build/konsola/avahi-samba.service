@@ -1,0 +1,11 @@
+<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<!-- CO: oglasza udzialy Samby w sieci lokalnej (mDNS/DNS-SD), konsola pojawia sie
+     w przegladarce sieci na Linuksie i macOS jako %h (arkada20). -->
+<service-group>
+  <name replace-wildcards="yes">%h</name>
+  <service>
+    <type>_smb._tcp</type>
+    <port>445</port>
+  </service>
+</service-group>

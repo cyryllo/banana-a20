@@ -21,7 +21,11 @@ You must choose a new password on the first SSH login (`ssh gracz@arkada20`). Th
 
 ## Games
 
-Put the games into the folder of their system. From Windows or Linux use the network share `\\arkada20\roms` (no password, local network only), or copy them over SSH to `/home/roms/<system>/`.
+Put the games into the folder of their system. From Windows or Linux use the network share `\\arkada20\roms` (on Linux also `smb://arkada20.local/roms`; if the name is not found, use the IP address shown in RetroArch under **Information → Network Information**), or copy them over SSH to `/home/roms/<system>/`.
+
+No password is needed from Linux (choose "Anonymous" when the file manager asks). Windows 11 blocks such guest access, there log in as `gracz` with the password `gracz`. This network password is separate from the SSH password, change it with `sudo smbpasswd gracz`.
+
+Other network shares (also inside `roms`): `\\arkada20\bios` (BIOS files), `\\arkada20\zapisy` (game saves and save states, handy for backups) and `\\arkada20\zrzuty` (RetroArch screenshots).
 
 | Folder | System | Core |
 |---|---|---|
