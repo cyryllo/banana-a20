@@ -87,7 +87,7 @@ konsola/zbuduj-retroarch.sh     # RetroArch with the patches from konsola/latki-
 ./zbuduj-obraz-pr.sh --pulpit brak --ekran 7 --konsola
 ```
 
-The image is `~/armbian-build/output/images/..._minimal_konsola.img`. `--gry DIR` adds games from `DIR/<system>/` for your own use; never publish an image with games.
+The image is `~/armbian-build/output/images/Arkada20_<date>_bananapipro_trixie_<kernel>.img`. `--gry DIR` adds games from `DIR/<system>/` for your own use; never publish an image with games.
 
 ### What is different from stock RetroArch
 

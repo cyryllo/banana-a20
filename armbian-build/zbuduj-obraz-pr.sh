@@ -163,15 +163,19 @@ START=$(date +%s)
 ./compile.sh build USERPATCHES_PATH="${UP}" BOARD=bananapipro BRANCH=current RELEASE=trixie \
 	KERNEL_CONFIGURE=no "${PULPIT_OPCJE[@]}" "${EXTRA[@]}"
 
-# CO: obraz konsoli dostaje przyrostek _konsola.
-# DLACZEGO: Armbian nazywa go tak samo jak zwykly obraz minimal i by go nadpisal.
+# CO: obraz konsoli dostaje nazwe projektu: Arkada20_<data>_bananapipro_trixie_<jadro>.img
+# DLACZEGO: to osobny system (Arkada20), a Armbian nazywa go tak samo jak zwykly
+# obraz minimal (Armbian-unofficial_..._minimal.img) i nastepne budowanie by go nadpisalo.
 if [[ "${KONSOLA}" == "yes" ]]; then
 	img=$(ls -1t "${BUILD_DIR}"/output/images/*Bananapipro*trixie*_minimal.img 2> /dev/null | head -1)
 	if [[ -n "${img}" && $(stat -c %Y "${img}") -ge ${START} ]]; then
-		for f in "${img}" "${img}.sha" "${img}.txt"; do
-			[[ -f "${f}" ]] && mv "${f}" "${f/_minimal.img/_minimal_konsola.img}"
-		done
-		sed -i 's/_minimal\.img/_minimal_konsola.img/' "${img%.img}_konsola.img.sha" 2> /dev/null || true
+		jadro=$(basename "${img}" | sed -E 's/.*_current_([0-9.]+)_minimal\.img/\1/')
+		nowy="$(dirname "${img}")/Arkada20_$(date +%F)_bananapipro_trixie_${jadro}.img"
+		mv "${img}" "${nowy}"
+		[[ -f "${img}.txt" ]] && mv "${img}.txt" "${nowy}.txt"
+		# DLACZEGO nowa suma: plik .sha Armbiana zawiera stara nazwe pliku.
+		(cd "$(dirname "${nowy}")" && sha256sum "$(basename "${nowy}")" > "$(basename "${nowy}").sha")
+		rm -f "${img}.sha"
 	fi
 fi
 
