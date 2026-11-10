@@ -8,7 +8,7 @@ LeMaker made the Banana Pro, its LCD panels and add-on boards around 2014-2015. 
 |---|---|---|
 | [LeMaker LCD panels](#lemaker-lcd-panels) | the 5" and 7" touch panels on the mainline kernel, ready images | done, merged into official Armbian |
 | [Arkada20](arkada20/README.md) | retro game console: the board boots straight into RetroArch, like Lakka | v1.0, tested with the 7" panel |
-| [GPIO](gpio/README.md) | pinout, WiringBP (C, `gpio readall`) and LMK.GPIO (Python, RPi.GPIO API) fixed for the current kernel, examples | done, tested on the board |
+| [GPIO](gpio/README.md) | pinout, WiringBP (C, `gpio readall`) and LMK.GPIO (Python, RPi.GPIO API) fixed for the current kernel, lg (lgpio/rgpio) instead of pigpio, examples | done, tested on the board |
 
 Ready images are on the [Releases](https://github.com/cyryllo/banana-a20/releases) page: `v0.x-...` for the LCD images, `arkada20-...` for the game console.
 
@@ -110,7 +110,7 @@ More: [arkada20/README.md](arkada20/README.md).
 
 ## GPIO
 
-The 40-pin header of the Banana Pro, with the two LeMaker libraries working again on the current kernel: **WiringBP** (WiringPi for C, with `gpio readall`) and **LMK.GPIO** (RPi.GPIO for Python), plus the standard Linux tools (libgpiod), a colour pinout and tested examples.
+The 40-pin header of the Banana Pro, with the two LeMaker libraries working again on the current kernel: **WiringBP** (WiringPi for C, with `gpio readall`) and **LMK.GPIO** (RPi.GPIO for Python). pigpio cannot run on the A20, its successor **lg** (lgpio, rgpio) works instead: software PWM and servos on any pin, alerts, control over the network. Plus the standard Linux tools (libgpiod), a colour pinout and tested examples.
 
 More: [gpio/README.md](gpio/README.md).
 

@@ -6,9 +6,10 @@ Everything to use the 40-pin header of the **LeMaker Banana Pro** (Allwinner A20
 - the standard Linux tools [libgpiod](#1-libgpiod-the-standard-linux-way) (`gpioset`, `gpiomon`, Python `gpiod`)
 - [WiringBP](#2-wiringbp-c-library-and-the-gpio-command): the WiringPi port for the Banana Pro (C library and the `gpio` command, `gpio readall`)
 - [LMK.GPIO](#3-lmkgpio-python-rpigpio-api): the RPi.GPIO port for the Banana Pro (Python)
-- [example programs](examples/) for all three, and how to enable [I2C, SPI, UART and PWM](#i2c-spi-uart-and-hardware-pwm)
+- [lg (lgpio, rgpio)](#4-lg-lgpio-and-rgpio-instead-of-pigpio): the successor of pigpio by the same author, for any Linux board: software PWM and servos on any pin, alerts, remote control over the network
+- [example programs](examples/) for all of them, and how to enable [I2C, SPI, UART and PWM](#i2c-spi-uart-and-hardware-pwm)
 
-WiringBP and LMK.GPIO were written by LeMaker for the old sunxi 3.4 kernel and had not been updated since 2016-2019. The versions here are fixed for the mainline kernel and Python 3.13 (see [Changes](#changes-against-the-lemaker-versions)). Everything on this page was tested on a Banana Pro with Armbian 6.18.62 (November 2026).
+WiringBP and LMK.GPIO were written by LeMaker for the old sunxi 3.4 kernel and had not been updated since 2016-2019. The versions here are fixed for the mainline kernel and Python 3.13 (see [Changes](#changes-against-the-original-versions)). lg needed one fix for the A20 (GPIO numbers above 255). Everything on this page was tested on a Banana Pro with Armbian 6.18.62 (November 2026).
 
 ## Contents
 
@@ -20,9 +21,10 @@ WiringBP and LMK.GPIO were written by LeMaker for the old sunxi 3.4 kernel and h
 - [1. libgpiod: the standard Linux way](#1-libgpiod-the-standard-linux-way)
 - [2. WiringBP: C library and the gpio command](#2-wiringbp-c-library-and-the-gpio-command)
 - [3. LMK.GPIO: Python, RPi.GPIO API](#3-lmkgpio-python-rpigpio-api)
+- [4. lg: lgpio and rgpio instead of pigpio](#4-lg-lgpio-and-rgpio-instead-of-pigpio)
 - [I2C, SPI, UART and hardware PWM](#i2c-spi-uart-and-hardware-pwm)
 - [Troubleshooting](#troubleshooting)
-- [Changes against the LeMaker versions](#changes-against-the-lemaker-versions)
+- [Changes against the original versions](#changes-against-the-original-versions)
 - [Licenses](#licenses)
 
 ## Pinout
@@ -104,20 +106,22 @@ The kernel GPIO number is computed from the SoC pin: **bank × 32 + pin**, with 
 
 ## Which tool to use
 
-| | libgpiod | WiringBP | LMK.GPIO |
-|---|---|---|---|
-| Language | shell, C, Python, C++ | C, shell (`gpio`) | Python 3 |
-| Install | `apt install` | build from this repository | build from this repository |
-| Pin numbers | kernel GPIO (275) | wPi, BCM or physical | physical or BCM |
-| Pull-up / pull-down | yes | yes | yes |
-| Interrupts (edges) | yes | yes (`wiringPiISR`) | yes (`add_event_detect`) |
-| PWM | kernel PWM (`/sys/class/pwm`) | hardware PWM on pin 12, software PWM on any pin | software PWM on any pin |
-| Pin overview | `gpioinfo` (numbers only) | **`gpio readall`** (table with modes and levels) | `GPIO.gpio_function()` |
-| Ported from Raspberry Pi | | WiringPi programs | RPi.GPIO programs |
-| Needs root | yes (`/dev/gpiochip0`) | yes | yes |
+| | libgpiod | WiringBP | LMK.GPIO | lg (lgpio) |
+|---|---|---|---|---|
+| Language | shell, C, Python, C++ | C, shell (`gpio`) | Python 3 | C, Python, shell (`rgs`) |
+| Install | `apt install` | build from this repository | build from this repository | build from this repository |
+| Pin numbers | kernel GPIO (275) | wPi, BCM or physical | physical or BCM | kernel GPIO (275) |
+| Pull-up / pull-down | yes | yes | yes | yes |
+| Interrupts (edges) | yes | yes (`wiringPiISR`) | yes (`add_event_detect`) | yes (alerts, ns time stamps) |
+| PWM | kernel PWM (`/sys/class/pwm`) | hardware PWM on pin 12, software PWM on any pin | software PWM on any pin | software PWM, servo pulses and pulse trains on any pin |
+| Pin overview | `gpioinfo` (numbers only) | **`gpio readall`** (table with modes and levels) | `GPIO.gpio_function()` | `gpio_get_line_info()` |
+| Ported from Raspberry Pi | | WiringPi programs | RPi.GPIO programs | lgpio programs; pigpio programs after changing the calls to the similar lgpio ones |
+| Remote control over the network | | | | yes (`rgpiod` + `rgpio`) |
+| Needs root | yes (`/dev/gpiochip0`) | yes | yes | yes (`/dev/gpiochip0`) |
 
 - New programs: **libgpiod**. It is the official kernel interface, comes with Debian and does not touch the hardware behind the kernel's back.
-- Existing Raspberry Pi programs: **LMK.GPIO** for Python (change the import), **WiringBP** for C.
+- Existing Raspberry Pi programs: **LMK.GPIO** for Python (change the import), **WiringBP** for C, **lg** for programs written for lgpio or pigpio.
+- Servos, PWM on many pins, control from another computer: **lg**.
 - Looking at the pins: **`gpio readall`**.
 
 ## Test circuit for the examples
@@ -336,6 +340,75 @@ Examples ([examples/python-lmk/](examples/python-lmk/)), run with `sudo python3 
 
 The old LeMaker tests are in [LMK.GPIO/test/](LMK.GPIO/test/).
 
+## 4. lg: lgpio and rgpio instead of pigpio
+
+[pigpio](https://github.com/joan2937/pigpio) cannot run on the Banana Pro: its precise timing comes from the DMA controller of the Raspberry Pi chip (paced by its PWM/PCM unit, with memory from the VideoCore), and the A20 has nothing to replace it with. The A20 DMA cannot run endless chains of transfers, and the A20 GPIO has one data register per bank instead of separate set/clear registers. pigpio is also no longer developed (last release v79, March 2021) and does not run on the Raspberry Pi 5 either.
+
+Its author (joan2937) wrote a successor for any Linux board: **[lg](https://github.com/joan2937/lg)**, included here in [lg/](lg/). It uses only the standard kernel interface (`/dev/gpiochip`), so it works on the A20 as it is, with one fix from this repository (alerts on GPIO numbers above 255, see [Changes](#changes-against-the-original-versions)). It contains:
+
+- **lgpio**: C library and Python module: GPIO, alerts with kernel time stamps, software PWM, servo pulses and pulse trains on any pin, I2C, SPI, serial, notifications,
+- **rgpiod** + **rgpio**: a daemon on the board and a C/Python client to control the pins from another computer over the network (like `pigpiod`), and the `rgs` shell command.
+
+### Install
+
+```bash
+sudo apt install git build-essential python3-dev python3-setuptools swig
+git clone https://github.com/cyryllo/banana-a20.git     # if not done yet
+cd banana-a20/gpio/lg
+make
+sudo make install
+```
+
+This installs `liblgpio`/`librgpio` to `/usr/local/lib`, the headers to `/usr/local/include`, `rgpiod` and `rgs` to `/usr/local/bin` and the `lgpio` and `rgpio` Python modules (a few minutes on the board). Use this copy, not the original: the original reports pins above 255 (bank PI, most header pins) with a wrong number, so Python callbacks on them never run.
+
+lgpio keeps its notification pipes (`.lgd-nfy*`) in the **current folder** and changes into it: run programs from a folder you can write to (not `/`), or set `LG_WD`, e.g. `sudo LG_WD=/tmp python3 program.py`.
+
+### Use
+
+```python
+import lgpio
+
+h = lgpio.gpiochip_open(0)                 # gpiochip0 = the A20 GPIO
+lgpio.gpio_claim_output(h, 275, 0)         # pin 11
+lgpio.gpio_write(h, 275, 1)
+lgpio.tx_pwm(h, 275, 200, 25)              # 200 Hz, 25 %
+lgpio.tx_servo(h, 275, 1500, 50)           # servo pulse 1500 us, 50 Hz
+
+lgpio.gpio_claim_alert(h, 274, lgpio.FALLING_EDGE, lgpio.SET_PULL_UP)   # pin 13
+cb = lgpio.callback(h, 274, lgpio.FALLING_EDGE,
+                    lambda chip, gpio, level, timestamp: print(gpio, level, timestamp))
+```
+
+In C: `#include <lgpio.h>`, functions `lgGpiochipOpen`, `lgGpioClaimOutput`, `lgGpioWrite`, `lgTxPwm`, `lgTxServo`, `lgGpioClaimAlert`, `lgGpioSetAlertsFunc`..., build with `-llgpio`. In alert callbacks use `report.gpio16` (full number), `report.gpio` only holds the low 8 bits. Full documentation: [lg/README.md](lg/README.md), `man lgpio`, `man rgpio`, and online: https://abyz.me.uk/lg/
+
+**Remote control.** On the board: `sudo rgpiod -n <IP of your computer>` (port 8889). Without `-n` (or `-l` for local connections only) **anyone in the network can switch the pins**. On the computer: `rgpio.sbc("<IP of the board>")`, then the same functions as in lgpio, see [remote_blink.py](examples/python-lgpio/remote_blink.py).
+
+### Timing accuracy
+
+PWM and servo pulses are timed in software (a thread with `clock_nanosleep`), so they depend on the CPU load. Measured on the board (pin 11, level read 1.7 million times per second):
+
+| Signal | Set | Idle board | Busy board (RetroArch with a game) |
+|---|---|---|---|
+| PWM 50 Hz, 25 % | 5000 µs high | 50.0 Hz, 5086-5169 µs | 45.9-50.1 Hz, 5265-5629 µs |
+| PWM 1 kHz, 50 % | 500 µs high | 900-992 Hz, 508-509 µs | 934-1009 Hz, 469-526 µs |
+| servo 1500 µs | 1500 µs | 1505-1533 µs | 1418-1816 µs |
+| servo 1000 µs | 1000 µs | 1007-1027 µs | 983-1123 µs |
+| pulses 100 µs / 900 µs | 100 µs | about 177 µs | |
+
+Good for LEDs, motors with drivers and servos on an idle board. Servos on a busy board jitter, and short pulses (under about 200 µs) come out too long. For exact signals use the hardware PWM on pin 12 (see [I2C, SPI, UART and hardware PWM](#i2c-spi-uart-and-hardware-pwm)) or a PCA9685 servo/PWM board on I2C (pins 3/5). Input events (alerts) are exact: they carry the kernel time stamp in nanoseconds.
+
+Examples ([examples/python-lgpio/](examples/python-lgpio/)), run with `sudo python3 <file>`:
+
+| Program | What it shows |
+|---|---|
+| [blink.py](examples/python-lgpio/blink.py) | LED on / off |
+| [button_alert.py](examples/python-lgpio/button_alert.py) | button with an alert, kernel time stamp and debounce, toggles the LED |
+| [pwm_led.py](examples/python-lgpio/pwm_led.py) | LED fading with software PWM |
+| [servo.py](examples/python-lgpio/servo.py) | servo: both ends and the centre |
+| [remote_blink.py](examples/python-lgpio/remote_blink.py) | LED controlled from another computer (rgpiod + rgpio) |
+
+The original lg examples are in [lg/EXAMPLES/](lg/EXAMPLES/).
+
 ## I2C, SPI, UART and hardware PWM
 
 These are used through the normal Linux devices. Functions that are off by default are enabled with Armbian overlays in `/boot/armbianEnv.txt` (`sudo nano /boot/armbianEnv.txt`, then reboot). The overlays go on one `overlays=` line, separated by spaces, together with the LCD panel if there is one:
@@ -398,9 +471,9 @@ sudo picocom -b 115200 /dev/ttyS1         # exit: Ctrl+A Ctrl+X
 | `LMK.GPIO: not a Banana Pro/Pi ...` | the library only works on the A20 boards (and the LeMaker Guitar) |
 | a pin used by I2C/SPI/UART does not react | the driver owns it; disable the function (overlay) or accept that the GPIO libraries take it over until reboot |
 
-## Changes against the LeMaker versions
+## Changes against the original versions
 
-WiringBP ([LeMaker/WiringBP](https://github.com/LeMaker/WiringBP), branch `bananapro`, last change 2017) and LMK.GPIO ([LeMaker/LMK.GPIO](https://github.com/LeMaker/LMK.GPIO), last change 2016) are included with their full history. Fixed for the mainline kernel (all tested on the board):
+WiringBP ([LeMaker/WiringBP](https://github.com/LeMaker/WiringBP), branch `bananapro`, last change 2017), LMK.GPIO ([LeMaker/LMK.GPIO](https://github.com/LeMaker/LMK.GPIO), last change 2016) and lg ([joan2937/lg](https://github.com/joan2937/lg), commit `bcccd78` of February 2026) are included with their full history. Fixed for the mainline kernel (all tested on the board):
 
 | Library | Problem on a current Armbian | Fix |
 |---|---|---|
@@ -411,6 +484,7 @@ WiringBP ([LeMaker/WiringBP](https://github.com/LeMaker/WiringBP), branch `banan
 | LMK.GPIO | board not detected (`Hardware : Allwinner sun7i (A20) Family`) | look for `sun7i` anywhere in the line |
 | LMK.GPIO | does not build with Python 3.13, GCC 14, without distutils | build fixes, setuptools |
 | LMK.GPIO | callbacks got the internal number instead of the pin, event detection failed when the pin was exported by another tool, unclear error on other boards | fixed |
+| lg | alerts stored the GPIO number in 8 bits: pin 13 (274) came as 18, Python and rgpio callbacks on pins above 255 never ran | full number in a new `gpio16` field (former padding, same struct size), used by the Python modules and rgpio |
 
 Not changed and not checked: the Banana Pi (non-Pro, 26-pin header) branch of WiringBP, the LeMaker Guitar code, the extension board drivers in `WiringBP/devLib/` and most old examples.
 
@@ -418,4 +492,5 @@ Not changed and not checked: the Banana Pi (non-Pro, 26-pin header) branch of Wi
 
 - WiringBP: GNU LGPL v3 ([WiringBP/COPYING.LESSER](WiringBP/COPYING.LESSER)), based on WiringPi by Gordon Henderson.
 - LMK.GPIO: based on RPi.GPIO by Ben Croston. The source files and `setup.py` carry the MIT license (copyright LeMaker Team), the file [LMK.GPIO/LICENSE](LMK.GPIO/LICENSE) is GPL v2; both allow use, changes and sharing, the GPL v2 asks to share the sources together with programs built from them.
+- lg: public domain ([The Unlicense](lg/UNLICENCE)), by joan2937.
 - The pinout, the examples and this documentation: same terms as the rest of this repository.
