@@ -1,3 +1,5 @@
+**English** | [Polski](README.pl.md)
+
 # banana-a20: LeMaker Banana Pro on current Linux
 
 Projects that bring the **LeMaker Banana Pro** (and the original Banana Pi, both with the Allwinner A20) back to life on a current system: Armbian with Debian 13 and the mainline kernel.

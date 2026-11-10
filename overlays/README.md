@@ -1,3 +1,5 @@
+**English** | [Polski](README.pl.md)
+
 # LeMaker LCD panels: technical details
 
 How the LeMaker LCD panels work on the mainline kernel, how the overlays were made and how to install or change them by hand. For normal use see the [main README](../README.md#lemaker-lcd-panels).

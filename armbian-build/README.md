@@ -1,3 +1,5 @@
+**English** | [Polski](README.pl.md)
+
 # Building an Armbian image for Banana Pro with LeMaker LCD support
 
 This directory lets you build your own Armbian image (Debian 13 trixie, XFCE desktop) for the LeMaker Banana Pro in which the LeMaker panels work right after the first boot. One image supports all panels, you choose the panel on the board. Nothing has to be installed afterwards.
@@ -148,7 +150,7 @@ ls /sys/class/backlight/                          # backlight
 dmesg | grep -iE "sun4i|lvds|panel|edt"
 ```
 
-More diagnostic commands and a troubleshooting table are in the [main README](../README.md).
+More diagnostic commands and a troubleshooting table are in the [main README](../README.md#problems).
 
 ## Choosing the panel
 
@@ -190,7 +192,7 @@ On the XFCE desktop simply touch the screen, the pointer should follow your fing
 sudo evtest      # choose the EDT-FT5x06 device and touch the screen, X/Y values should appear
 ```
 
-If the axes are mirrored or swapped, see the troubleshooting table in the [main README](../README.md).
+If the axes are mirrored or swapped, see [Changing an overlay](../overlays/README.md#changing-an-overlay).
 
 ## Adjusting an overlay on the board
 
@@ -209,7 +211,7 @@ Once a fix is confirmed, please bring it back to the repository so it ends up in
 The image uses the Armbian repository, so `apt upgrade` may install the official kernel **without** the touch module. The display and backlight will keep working, touch will stop. There are two options:
 
 - hold kernel updates: `sudo apt-mark hold linux-image-current-sunxi linux-dtb-current-sunxi`
-- or build the module on the board after the update (option A in the [main README](../README.md)).
+- or build the module on the board after the update (see [Manual installation](../overlays/README.md#manual-installation-on-an-existing-armbian), touch driver).
 
 You can get a newer kernel with touch by building the image again with `--aktualizuj`. The kernel packages alone (`.deb`, to install with `dpkg -i`) are in `~/armbian-build/output/debs/` after the build.
 

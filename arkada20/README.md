@@ -1,3 +1,5 @@
+**English** | [Polski](README.pl.md)
+
 <p align="center"><img src="logo/arkada20-logo.svg" alt="Arkada20" width="520"></p>
 
 # Arkada20: retro game console for the Banana Pro (Allwinner A20)
