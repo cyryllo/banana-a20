@@ -1,0 +1,18 @@
+From: Cyryl Sochacki <cyrylsochacki@gmail.com>
+Subject: [PATCH] intl: Polish label for system shutdown
+
+"Zamknąć" (infinitive, "to close") reads like closing RetroArch.
+Name the entry after what it does: "Zamknij system" (shut down the system).
+
+---
+--- a/intl/msg_hash_pl.h
++++ b/intl/msg_hash_pl.h
+@@ -13491,7 +13491,7 @@
+    )
+ MSG_HASH(
+    MENU_ENUM_LABEL_VALUE_SHUTDOWN,
+-   "Zamknąć"
++   "Zamknij system"
+    )
+ MSG_HASH(
+    MENU_ENUM_LABEL_VALUE_FILE_BROWSER_OPEN_UWP_PERMISSIONS,

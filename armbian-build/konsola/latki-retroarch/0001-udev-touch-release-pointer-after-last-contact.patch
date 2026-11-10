@@ -1,0 +1,24 @@
+From: Cyryl Sochacki <cyrylsochacki@gmail.com>
+Subject: [PATCH] udev: release the simulated pointer after the last touch contact
+
+When a touch contact ends, staging_active has already been decremented,
+so "staging_active == 0" is true exactly when the last finger was lifted.
+The pointer was therefore reported as pressed after release and released
+while a second contact was still down. The menu acts on pointer release,
+so taps on a touchscreen did nothing (tested on Allwinner A20 with an
+FT5x06 touchscreen, KMS + udev, RetroArch 1.20.0).
+
+Keep the pointer pressed while any contact is active, as the comment says.
+
+---
+--- a/input/drivers/udev_input.c
++++ b/input/drivers/udev_input.c
+@@ -2402,7 +2402,7 @@
+             /* Simulated pointer */
+             /* Release the pointer only after all contacts are released */
+             if (touch->pointer_enabled)
+-               touch->pointer_btn_pp = (touch->staging_active == 0);
++               touch->pointer_btn_pp = (touch->staging_active > 0);
+ 
+             /* Mouse section */
+             if (touch->mouse_enabled)

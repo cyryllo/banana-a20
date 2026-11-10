@@ -1,0 +1,29 @@
+From: Cyryl Sochacki <cyrylsochacki@gmail.com>
+Subject: [PATCH] udev: report touchscreen pointer position and press state
+
+In udev_input_touch_state() the RETRO_DEVICE_POINTER and
+RARCH_DEVICE_POINTER_SCREEN case left the switch with a stray "break"
+right after setting "screen", so the switch on the pointer id was never
+reached and the pointer always reported 0 (no position, never pressed).
+The menu therefore never saw touchscreen taps.
+
+The screen check also compared against RARCH_DEVICE_MOUSE_SCREEN
+instead of RARCH_DEVICE_POINTER_SCREEN, so screen coordinates were
+never used for the pointer.
+
+Tested on Allwinner A20 with an FT5x06 touchscreen, KMS + udev,
+RetroArch 1.20.0 (the same code is in master).
+
+---
+--- a/input/drivers/udev_input.c
++++ b/input/drivers/udev_input.c
+@@ -3081,8 +3081,7 @@
+ 
+       case RETRO_DEVICE_POINTER:
+       case RARCH_DEVICE_POINTER_SCREEN:
+-         screen = (device == RARCH_DEVICE_MOUSE_SCREEN);
+-         break;
++         screen = (device == RARCH_DEVICE_POINTER_SCREEN);
+          switch (id)
+          {
+             case RETRO_DEVICE_ID_POINTER_X:

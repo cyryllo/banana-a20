@@ -1,0 +1,22 @@
+# CO: pilnuje katalogow z grami i po kazdej zmianie (np. gry wrzucone przez
+# udzial sieciowy) uruchamia konsola-listy.service.
+# DLACZEGO kazdy katalog osobno: PathChanged widzi tylko zmiany bezposrednio
+# w podanym katalogu, nie w podkatalogach.
+[Unit]
+Description=Pilnowanie katalogow z grami (/home/roms)
+
+[Path]
+PathChanged=/home/roms/nes
+PathChanged=/home/roms/snes
+PathChanged=/home/roms/gb
+PathChanged=/home/roms/gba
+PathChanged=/home/roms/megadrive
+PathChanged=/home/roms/mastersystem
+PathChanged=/home/roms/gamegear
+PathChanged=/home/roms/psx
+PathChanged=/home/roms/mame2003
+PathChanged=/home/roms/fbneo
+Unit=konsola-listy.service
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,80 @@
+#!/bin/bash
+# konsola-listy: tworzy listy gier RetroArch (playlisty) z katalogow /home/roms/<system>.
+#
+# CO: kazdy katalog z grami = jedna ikona konsoli w menu (jak w Lakce),
+# z przypisanym rdzeniem, wiec gra startuje od razu, bez pytania o emulator.
+# DLACZEGO wlasny skrypt, a nie "Skanuj katalog" z RetroArch: skanowanie
+# rozpoznaje gry po sumach kontrolnych i czesto pomija automaty (MAME, FBNeo)
+# oraz gry spoza bazy; tu decyduje katalog, do ktorego wrzucono plik.
+# Uruchamiany przed startem RetroArch i po zmianie plikow w /home/roms.
+
+set -u
+
+ROMS=/home/roms
+LISTY=/root/.config/retroarch/playlists
+LR=/usr/lib/arm-linux-gnueabihf/libretro
+
+# katalog | nazwa listy (= nazwa bazy, od niej zalezy ikona) | rdzen | rozszerzenia
+SYSTEMY='
+nes|Nintendo - Nintendo Entertainment System|fceumm|nes fds unf unif zip 7z
+snes|Nintendo - Super Nintendo Entertainment System|snes9x2010|smc sfc swc fig bs zip 7z
+gb|Nintendo - Game Boy|gambatte|gb gbc dmg zip 7z
+gba|Nintendo - Game Boy Advance|gpsp|gba bin zip 7z
+megadrive|Sega - Mega Drive - Genesis|picodrive|md gen smd bin 32x zip 7z
+mastersystem|Sega - Master System - Mark III|picodrive|sms zip 7z
+gamegear|Sega - Game Gear|genesis_plus_gx|gg zip 7z
+psx|Sony - PlayStation|pcsx_rearmed|cue chd pbp m3u
+mame2003|MAME 2003-Plus|mame2003_plus|zip
+fbneo|FBNeo - Arcade Games|fbneo|zip 7z
+'
+
+# CO: zamienia tekst na bezpieczny napis JSON (cudzyslowy i ukosniki).
+json() {
+	local s=${1//\\/\\\\}
+	printf '"%s"' "${s//\"/\\\"}"
+}
+
+# CO: gry dolaczone do obrazu (zbuduj-obraz-pr.sh --gry) kopiowane raz do /home/roms.
+# DLACZEGO nie od razu w /home/roms: Armbian czysci /home przy budowaniu obrazu.
+# DLACZEGO raz (znacznik): gra usunieta przez uzytkownika nie ma wracac.
+STARTOWE=/usr/local/share/konsola/gry
+ZNACZNIK=/var/lib/konsola/gry-startowe-skopiowane
+if [[ -d "${STARTOWE}" && ! -e "${ZNACZNIK}" ]]; then
+	mkdir -p "${ROMS}" /var/lib/konsola
+	cp -rn "${STARTOWE}/." "${ROMS}/" && touch "${ZNACZNIK}"
+fi
+
+mkdir -p "${LISTY}"
+while IFS='|' read -r katalog nazwa rdzen rozszerzenia; do
+	[[ -z "${katalog}" ]] && continue
+	lista="${LISTY}/${nazwa}.lpl"
+	core="${LR}/${rdzen}_libretro.so"
+	# CO: wzorzec find dla rozszerzen (wielkosc liter bez znaczenia).
+	wzorzec=()
+	for r in ${rozszerzenia}; do
+		wzorzec+=(-o -iname "*.${r}")
+	done
+	mapfile -t pliki < <(find "${ROMS}/${katalog}" -maxdepth 2 -type f \( "${wzorzec[@]:1}" \) 2> /dev/null | sort)
+	# DLACZEGO usuwamy pusta liste: pusta konsola nie powinna miec ikony.
+	if [[ ${#pliki[@]} -eq 0 ]]; then
+		rm -f "${lista}"
+		continue
+	fi
+	{
+		printf '{\n  "version": "1.5",\n'
+		printf '  "default_core_path": %s,\n' "$(json "${core}")"
+		printf '  "default_core_name": %s,\n' "$(json "${rdzen}")"
+		printf '  "label_display_mode": 0,\n  "right_thumbnail_mode": 0,\n  "left_thumbnail_mode": 0,\n  "sort_mode": 0,\n'
+		printf '  "items": [\n'
+		n=0
+		for p in "${pliki[@]}"; do
+			etykieta=$(basename "${p}")
+			etykieta=${etykieta%.*}
+			[[ ${n} -gt 0 ]] && printf ',\n'
+			printf '    {"path": %s, "label": %s, "core_path": %s, "core_name": %s, "crc32": "DETECT", "db_name": %s}' \
+				"$(json "${p}")" "$(json "${etykieta}")" "$(json "${core}")" "$(json "${rdzen}")" "$(json "${nazwa}.lpl")"
+			n=$((n + 1))
+		done
+		printf '\n  ]\n}\n'
+	} > "${lista}.tmp" && mv "${lista}.tmp" "${lista}"
+done <<< "${SYSTEMY}"

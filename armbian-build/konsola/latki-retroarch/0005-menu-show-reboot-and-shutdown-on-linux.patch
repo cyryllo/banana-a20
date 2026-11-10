@@ -1,0 +1,22 @@
+From: Cyryl Sochacki <cyrylsochacki@gmail.com>
+Subject: [PATCH] menu: show Reboot and Shutdown on Linux, not only on Lakka
+
+CMD_EVENT_REBOOT and CMD_EVENT_SHUTDOWN are already implemented for
+Linux ("shutdown -r now" / "shutdown -P now"), but the menu entries
+were created only for HAVE_LAKKA builds. On a handheld or arcade
+cabinet running RetroArch as the only frontend (KMS, no desktop) there
+was no way to power off from the menu. The entries can still be hidden
+with menu_show_reboot / menu_show_shutdown.
+
+---
+--- a/menu/menu_setting.c
++++ b/menu/menu_setting.c
+@@ -10593,7 +10593,7 @@
+               parent_group);
+ #endif
+ 
+-#if defined(HAVE_LAKKA)
++#if defined(HAVE_LAKKA) || (defined(__linux__) && !defined(ANDROID))
+          CONFIG_ACTION(
+                list, list_info,
+                MENU_ENUM_LABEL_REBOOT,

@@ -1,0 +1,8 @@
+# CO: odswieza listy gier RetroArch po zmianie plikow w /home/roms
+# (uruchamiana przez konsola-listy.path).
+[Unit]
+Description=Listy gier RetroArch z katalogow /home/roms
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/konsola-listy

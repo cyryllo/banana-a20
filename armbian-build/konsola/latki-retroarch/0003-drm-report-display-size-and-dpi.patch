@@ -1,0 +1,69 @@
+From: Cyryl Sochacki <cyrylsochacki@gmail.com>
+Subject: [PATCH] drm: report display size and DPI from the DRM connector
+
+The KMS context had no get_metrics callback, so the menu always got DPI 0.
+With DPI 0 the menu skips pointer drag detection, swipe gestures and
+press direction, so on a touchscreen only taps work (no scrolling, XMB
+categories cannot be changed). The DRM connector already carries the
+physical size (mmWidth/mmHeight) from the panel description or EDID;
+use it for DISPLAY_METRIC_MM_WIDTH/MM_HEIGHT/DPI.
+
+Tested on Allwinner A20 with a 7" 1024x600 LVDS panel (154 x 86 mm).
+
+---
+--- a/gfx/drivers_context/drm_ctx.c
++++ b/gfx/drivers_context/drm_ctx.c
+@@ -995,6 +995,44 @@
+ 
+ static bool gfx_ctx_drm_has_focus(void *data) { return true; }
+ 
++/* Physical display size and DPI from the DRM connector.
++ * The kernel fills mmWidth/mmHeight from the panel description (device tree
++ * width-mm/height-mm) or from the EDID. Without these metrics the menu gets
++ * DPI 0, which disables pointer dragging, swipe gestures and press direction,
++ * so a touchscreen can only tap. */
++static bool gfx_ctx_drm_get_metrics(void *data,
++      enum display_metric_types type, float *value)
++{
++   unsigned mm_width  = g_drm_connector ? g_drm_connector->mmWidth  : 0;
++   unsigned mm_height = g_drm_connector ? g_drm_connector->mmHeight : 0;
++   unsigned px_width  = g_drm_mode ? g_drm_mode->hdisplay : 0;
++
++   switch (type)
++   {
++      case DISPLAY_METRIC_MM_WIDTH:
++         if (!mm_width)
++            return false;
++         *value = (float)mm_width;
++         return true;
++      case DISPLAY_METRIC_MM_HEIGHT:
++         if (!mm_height)
++            return false;
++         *value = (float)mm_height;
++         return true;
++      case DISPLAY_METRIC_DPI:
++         if (!mm_width || !px_width)
++            return false;
++         *value = ((float)px_width * 25.4f) / (float)mm_width;
++         return true;
++      case DISPLAY_METRIC_NONE:
++      default:
++         break;
++   }
++
++   *value = 0.0f;
++   return false;
++}
++
+ static bool gfx_ctx_drm_suppress_screensaver(void *data, bool enable) { return false; }
+ 
+ static enum gfx_ctx_api gfx_ctx_drm_get_api(void *data) { return drm_api; }
+@@ -1095,7 +1133,7 @@
+    gfx_ctx_drm_get_video_output_size,
+    NULL, /* get_video_output_prev */
+    NULL, /* get_video_output_next */
+-   NULL, /* get_metrics */
++   gfx_ctx_drm_get_metrics,
+    NULL,
+    NULL, /* update_title */
+    gfx_ctx_drm_check_window,

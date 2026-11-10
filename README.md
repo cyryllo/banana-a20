@@ -91,6 +91,7 @@ grep -A1 -i edt /proc/bus/input/devices
 |---|---|
 | `overlays/` | Device Tree overlays for the 3.5", 5" and 7" panels, the 7" variant for use with HDMI (`lcd7-hdmi`) and `bananapro-disable-hdmi` |
 | `armbian-build/` | Scripts to build the images yourself (`zbuduj-obraz-pr.sh`: official Armbian + the three Armbian PRs, used for the images since v0.6; `zbuduj-obraz.sh`: older images with `lemaker-lcd`), see [armbian-build/README.md](armbian-build/README.md) |
+| `armbian-build/konsola/` | **Arkada20**: a retro game console image (RetroArch without a desktop, like Lakka) for the Banana Pro with a LeMaker LCD, see [armbian-build/konsola/README.md](armbian-build/konsola/README.md) |
 | `stare jądro sunxi 3.4/` | Original LeMaker `fex`/`bin` files for the old 3.4 kernel, kept as the source of the parameters |
 
 ### Manual installation on an existing Armbian

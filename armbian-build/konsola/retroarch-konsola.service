@@ -1,0 +1,40 @@
+# CO: RetroArch na ekranie (tty1) od startu systemu, bez logowania, jak w Lakce.
+# DLACZEGO root: wylaczanie i restart z menu RetroArch wymagaja uprawnien root,
+# tak samo dziala Lakka. Logowanie przez SSH dziala normalnie.
+#
+# CO: "Zamknij RetroArch" w menu daje zwykle logowanie na ekranie (tty1).
+# Po awarii RetroArch uruchamia sie ponownie sam. Z powrotem do gier:
+# reboot albo systemctl start retroarch-konsola.
+#
+# DLACZEGO bez terminala (StandardInput=null, bez TTYPath): RetroArch rysuje
+# przez KMS i czyta pady/klawiature przez udev, terminal nie jest mu potrzebny.
+# Podpiety pod tty1 dostawal SIGHUP i ginal, gdy konczyla sie tam sesja
+# logowania (np. kreator Armbiana), a ignorowanie SIGHUP nie pomagalo
+# (sprawdzone na plytce 2026-11-09). Przy okazji dziala Ctrl+Alt+F2.
+[Unit]
+Description=RetroArch (konsola do gier)
+# DLACZEGO po getty@tty1: RetroArch zamyka ekran logowania dopiero, gdy ten juz
+# wystartowal (ExecStartPre nizej), inaczej getty uruchomilby sie po nim na tym samym tty1.
+After=systemd-user-sessions.service sound.target getty@tty1.service
+
+[Service]
+Type=simple
+Environment=HOME=/root
+# CO: zamyka ekran logowania na tty1, bo RetroArch zajmuje ten sam ekran,
+# a klawiatura pisalaby jednoczesnie do gry i do logowania.
+# DLACZEGO nie Conflicts=getty@tty1: systemd rozwiazuje konflikt przed sprawdzeniem
+# ConditionPathExists, wiec przy pierwszym starcie zatrzymywal getty z kreatorem
+# Armbiana, choc RetroArch sie nie uruchamial (czarny ekran po graphical.target).
+ExecStartPre=-/bin/systemctl stop getty@tty1.service
+# CO: listy gier z /home/roms przed kazdym startem (ikony konsol w menu).
+ExecStartPre=/usr/local/bin/konsola-listy
+ExecStart=/usr/local/bin/retroarch
+ExecStopPost=/bin/sh -c 'if [ "$SERVICE_RESULT" = success ]; then systemctl --no-block start getty@tty1.service; fi'
+Restart=on-failure
+RestartSec=2
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
