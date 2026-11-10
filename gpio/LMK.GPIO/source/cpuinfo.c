@@ -55,7 +55,6 @@ char *get_cpuinfo_revision(char *revision)
 {
 	FILE *fp;
 	char buffer[1024];
-	char hardware[1024];
 	int  findID = 0;
 
 	if ((fp = fopen("/proc/cpuinfo", "r")) == NULL)
@@ -64,13 +63,18 @@ char *get_cpuinfo_revision(char *revision)
 	while(!feof(fp)) {
 		if(fgets(buffer, sizeof(buffer) , fp) != NULL)
 		{
-			sscanf(buffer, "Hardware	: %s", hardware);
-			if (strcmp(hardware, "sun7i") == 0) {
-				f_a20=1;
-				findID = 1;
-			}else if (strcmp(hardware, "gs705a") == 0){
-				f_s500 = 1;
-				findID = 1;
+			/* WHAT: find the SoC name anywhere in the "Hardware" line.
+			 * WHY: the sunxi-3.4 kernel printed "Hardware : sun7i", the
+			 * mainline kernel prints "Allwinner sun7i (A20) Family", so
+			 * comparing the first word no longer matched. */
+			if (strncmp(buffer, "Hardware", 8) == 0) {
+				if (strstr(buffer, "sun7i") != NULL) {
+					f_a20 = 1;
+					findID = 1;
+				} else if (strstr(buffer, "gs705a") != NULL) {
+					f_s500 = 1;
+					findID = 1;
+				}
 			}
 			sscanf(buffer, "Revision	: %s", revision);
 		}

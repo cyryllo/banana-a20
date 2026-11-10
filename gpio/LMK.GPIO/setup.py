@@ -20,14 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from distutils.core import setup, Extension
+# WHY setuptools: distutils was removed in Python 3.12.
+from setuptools import setup, Extension
 
 classifiers = ['Development Status :: 5 - Production/Stable',
                'Operating System :: POSIX :: Linux',
                'License :: OSI Approved :: MIT License',
                'Intended Audience :: Developers',
-               'Programming Language :: Python :: 2.6',
-               'Programming Language :: Python :: 2.7',
                'Programming Language :: Python :: 3',
                'Topic :: Software Development',
                'Topic :: Home Automation',
@@ -44,4 +43,8 @@ setup(name             = 'LMK.GPIO',
       url              = 'https://github.com/LeMaker/LMK.GPIO',
       classifiers      = classifiers,
       packages         = ['LMK'],
-      ext_modules      = [Extension('LMK.GPIO', ['source/py_gpio.c', 'source/c_gpio.c', 'source/cpuinfo.c', 'source/event_gpio.c', 'source/soft_pwm.c', 'source/py_pwm.c', 'source/common.c', 'source/constants.c'])])
+      ext_modules      = [Extension('LMK.GPIO', ['source/py_gpio.c', 'source/c_gpio.c', 'source/cpuinfo.c', 'source/event_gpio.c', 'source/soft_pwm.c', 'source/py_pwm.c', 'source/common.c', 'source/constants.c'],
+                                    # WHY -fcommon: the headers define global variables that several
+                                    # files include; GCC 10+ defaults to -fno-common and then fails
+                                    # with "multiple definition" at link time.
+                                    extra_compile_args = ['-fcommon'])])

@@ -232,7 +232,10 @@ int get_gpio_number(int channel, unsigned int *gpio,unsigned int *sys_gpio)
 				return 5;
 			} 
 			*gpio = *(physToGpio_BP+channel);	//pin_to_gpio is initialized in py_gpio.c, the last several lines
-			*sys_gpio = *(physToGpioR3 + channel);			
+			/* WHAT: /sys/class/gpio number = kernel GPIO number (bank * 32 + pin).
+			 * WHY: the sunxi-3.4 kernel used BCM-like numbers there; on the
+			 * mainline kernel BCM 17 is PA17 (Ethernet), not pin 11 (PI19). */
+			*sys_gpio = *gpio;
 		}
 		else if(is_s500_platform())  //add for guitar
 		{
@@ -261,7 +264,7 @@ int get_gpio_number(int channel, unsigned int *gpio,unsigned int *sys_gpio)
 				return 5;
 			} 
 			*gpio = *(pinTobcm_BP + channel);
-			*sys_gpio = channel;
+			*sys_gpio = *gpio;	/* kernel GPIO number, see BOARD mode above */
 		} 
 		else if(is_s500_platform())  //add for guitar
 		{

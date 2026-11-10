@@ -86,7 +86,7 @@ static PyObject *py_cleanup(PyObject *self, PyObject *args, PyObject *kwargs)
          event_cleanup_all();
          
          // set everything back to input
-         for (i=0; i<256; i++) {
+         for (i=0; i<GPIO_MAX; i++) {
             if (gpio_direction[i] != -1) {
 				debug("Clean %d \n",i);
 				if(v == BANANAPRO){
@@ -732,7 +732,7 @@ PyMODINIT_FUNC initGPIO(void)
 	
    define_constants(module);
 
-   for (i=0; i<256; i++)
+   for (i=0; i<GPIO_MAX; i++)
       gpio_direction[i] = -1;
 
    if (revision == -1)
@@ -762,10 +762,14 @@ PyMODINIT_FUNC initGPIO(void)
    Py_INCREF(&PWMType);
    PyModule_AddObject(module, "PWM", (PyObject*)&PWMType);
 
+   /* WHAT: thread support for the event callbacks.
+    * WHY: since Python 3.7 it is always on, and Python 3.13 removed
+    * PyEval_ThreadsInitialized(), so only call it on old versions. */
+#if PY_VERSION_HEX < 0x03070000
    if (!PyEval_ThreadsInitialized()){
       PyEval_InitThreads();
-
    }
+#endif
    
    //Initialized only once
     if (mmap_gpio_mem())

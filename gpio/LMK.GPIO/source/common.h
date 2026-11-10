@@ -45,7 +45,11 @@ const int physToGpioR3 [64];
 const int gpioEdge_GT[10];
 const int gpioEdge_BP[15];
 
-int gpio_direction[256];
+/* WHAT: size of the per-pin tables, indexed by kernel GPIO number.
+ * WHY: on the mainline kernel header pins go up to 277 (PI21 = 8 * 32 + 21),
+ * the old size 256 overflowed for the PI pins. */
+#define GPIO_MAX 512
+int gpio_direction[GPIO_MAX];
 int revision;
 int setup_error;
 int module_setup;
