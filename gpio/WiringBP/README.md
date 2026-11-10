@@ -1,3 +1,5 @@
+> **Banana Pro on a current Armbian (2026):** this copy is fixed for the mainline kernel. Installation, usage and examples: [../README.md](../README.md). The text below is the original LeMaker README: it describes the old sunxi 3.4 kernel, wiringpi.com is gone (archived copy: https://web.archive.org/web/2019/http://wiringpi.com/), the LeMaker wiki was still online in November 2026.
+
 # wiringBP README
 
 This is a modified WiringPi for Banana Pro/Pi. We call it WiringBP.

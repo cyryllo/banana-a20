@@ -1,3 +1,5 @@
+> **Banana Pro on a current Armbian (2026):** this copy is fixed for the mainline kernel. Installation, usage and examples: [../README.md](../README.md). The text below is the original LeMaker README: it describes the old sunxi 3.4 kernel, wiringpi.com is gone (archived copy: https://web.archive.org/web/2019/http://wiringpi.com/), the LeMaker wiki was still online in November 2026.
+
 LMK.GPIO README
 
 LMK.GPIO is a GPIO library that can support LeMaker SBC products, such as Banana Pro/Pi, LeMaker Guitar. In order to use convenient, we set most functions name to the same as the RPi.GPIO for Raspberry Pi.
