@@ -25,7 +25,7 @@ The build is based on the official [Armbian build framework](https://docs.armbia
 | `zbuduj-obraz.sh` | Script that does everything ("build image"): downloads Armbian build, copies the files, starts the build. |
 | `lemaker-lcd` | Panel switch script installed on the board as `/usr/local/sbin/lemaker-lcd`. |
 | `userpatches/kernel/archive/sunxi-6.18/edt-ft5x06-retry-identify-after-bus-recovery.patch` | Kernel patch: the touch driver retries the identification once after the I2C bus recovery at boot. |
-| `lemaker-touch-retry`, `lemaker-touch-retry.service` | Not used in the images. Only for kernels without the patch above (e.g. a module built by hand), see the [main README](../README.md#manual-installation-on-an-existing-armbian). |
+| `lemaker-touch-retry`, `lemaker-touch-retry.service` | Not used in the images. Only for kernels without the patch above (e.g. a module built by hand), see [overlays/README.md](../overlays/README.md#manual-installation-on-an-existing-armbian). |
 | `userpatches/config-bananapro-lcd.conf` | Build settings (board, Debian 13, kernel) and enabling the touch driver. |
 | `userpatches/customize-image.sh` | Run by Armbian inside the image: compiles the overlays, installs `lemaker-lcd` and enables the default panel. |
 
