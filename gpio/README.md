@@ -344,7 +344,7 @@ The old LeMaker tests are in [LMK.GPIO/test/](LMK.GPIO/test/).
 
 [pigpio](https://github.com/joan2937/pigpio) cannot run on the Banana Pro: its precise timing comes from the DMA controller of the Raspberry Pi chip (paced by its PWM/PCM unit, with memory from the VideoCore), and the A20 has nothing to replace it with. The A20 DMA cannot run endless chains of transfers, and the A20 GPIO has one data register per bank instead of separate set/clear registers. pigpio is also no longer developed (last release v79, March 2021) and does not run on the Raspberry Pi 5 either.
 
-Its author (joan2937) wrote a successor for any Linux board: **[lg](https://github.com/joan2937/lg)**, included here in [lg/](lg/). It uses only the standard kernel interface (`/dev/gpiochip`), so it works on the A20 as it is, with one fix from this repository (alerts on GPIO numbers above 255, see [Changes](#changes-against-the-original-versions)). It contains:
+Its author (joan2937) wrote a successor for any Linux board: **[lg](https://github.com/joan2937/lg)**, included here in [lg/](lg/). It uses only the standard kernel interface (`/dev/gpiochip`), so it works on the A20 as it is, with one fix from this repository (alerts on GPIO numbers above 255, see [Changes](#changes-against-the-original-versions), reported as [lg#49](https://github.com/joan2937/lg/issues/49)). It contains:
 
 - **lgpio**: C library and Python module: GPIO, alerts with kernel time stamps, software PWM, servo pulses and pulse trains on any pin, I2C, SPI, serial, notifications,
 - **rgpiod** + **rgpio**: a daemon on the board and a C/Python client to control the pins from another computer over the network (like `pigpiod`), and the `rgs` shell command.
@@ -484,7 +484,7 @@ WiringBP ([LeMaker/WiringBP](https://github.com/LeMaker/WiringBP), branch `banan
 | LMK.GPIO | board not detected (`Hardware : Allwinner sun7i (A20) Family`) | look for `sun7i` anywhere in the line |
 | LMK.GPIO | does not build with Python 3.13, GCC 14, without distutils | build fixes, setuptools |
 | LMK.GPIO | callbacks got the internal number instead of the pin, event detection failed when the pin was exported by another tool, unclear error on other boards | fixed |
-| lg | alerts stored the GPIO number in 8 bits: pin 13 (274) came as 18, Python and rgpio callbacks on pins above 255 never ran | full number in a new `gpio16` field (former padding, same struct size), used by the Python modules and rgpio |
+| lg | alerts stored the GPIO number in 8 bits: pin 13 (274) came as 18, Python and rgpio callbacks on pins above 255 never ran | full number in a new `gpio16` field (former padding, same struct size), used by the Python modules and rgpio; reported upstream as [lg#49](https://github.com/joan2937/lg/issues/49) |
 
 Not changed and not checked: the Banana Pi (non-Pro, 26-pin header) branch of WiringBP, the LeMaker Guitar code, the extension board drivers in `WiringBP/devLib/` and most old examples.
 
