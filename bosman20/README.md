@@ -11,7 +11,7 @@ It is built on Armbian (Debian 13 trixie, mainline kernel) with the LeMaker LCD 
 | Klipper, Moonraker, Mainsail | installed with KIAUH; the same stack runs on the author's printers on a Banana Pro |
 | KlipperScreen on the 7" panel | tested: picture and touch |
 | 5" panel | works with the same overlay (`lemaker-lcd5`), smaller layout |
-| Wake the screen by touch | see [Known issues](#known-issues) |
+| Wake the screen by touch | works (touch controller keeps the panel supply on) |
 
 ## First boot
 
@@ -56,7 +56,7 @@ Mainsail and Moonraker have no password. Anyone in your local network can contro
 
 ## Known issues
 
-- **Touch does not wake the dimmed screen.** When KlipperScreen turns the screen off, the kernel also cuts the power of the touch controller (it shares the panel supply), so touch cannot wake it. Workaround: set a longer blanking time or "never" in KlipperScreen. The fix (`vcc-supply` in the touch node) is tested and in the overlays of this repository; it will be in the next Bosman20 image and is proposed for Armbian.
+- **Touch wake on other Armbian images.** The touch controller shares the panel supply. Bosman20 has the overlay fix (`vcc-supply` in the touch node) that keeps it powered while the screen is off; until it is merged in Armbian, other Armbian images do not wake the screen on touch.
 - **Kernel updates**: until an official Armbian kernel with the LeMaker changes is out, `apt upgrade` may install a kernel without the panel support. Keep the kernel: `sudo apt-mark hold linux-image-current-sunxi linux-dtb-current-sunxi`.
 
 ## Building the image

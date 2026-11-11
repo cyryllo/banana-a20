@@ -48,6 +48,7 @@ The script fetches the official [armbian/build](https://github.com/armbian/build
 | `--pulpit NAME` | `xfce` (default) or `brak` (minimal image without a desktop) |
 | `--konsola` | the [Arkada20](../arkada20/README.md) game console (only with `--pulpit brak`) |
 | `--armbian REF` | branch, tag or commit of armbian/build (default `main`); a fixed commit gives the same image again, e.g. for a release |
+| `--repo URL` | another armbian/build repository, e.g. a fork with a change that is not merged yet (default `https://github.com/armbian/build.git`) |
 | `--katalog DIR` | armbian/build folder (default `~/armbian-build`) |
 
 The requirements are the same as below. The weekly official Armbian images for the Banana Pro (minimal, `current` kernel) contain the same LCD support once they are built from a version after 2026-11-10; this script is for the XFCE image, a panel enabled from the first boot, Arkada20 or a fixed Armbian version.

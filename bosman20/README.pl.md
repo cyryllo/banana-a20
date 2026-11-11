@@ -11,7 +11,7 @@ System jest zbudowany na Armbianie (Debian 13 trixie, jądro mainline) z obsług
 | Klipper, Moonraker, Mainsail | instalowane przez KIAUH; ten sam zestaw działa u autora na drukarkach z Banana Pro |
 | KlipperScreen na ekranie 7" | sprawdzony: obraz i dotyk |
 | ekran 5" | działa z tą samą nakładką (`lemaker-lcd5`), mniejszy układ |
-| budzenie ekranu dotykiem | zobacz [Znane problemy](#znane-problemy) |
+| budzenie ekranu dotykiem | działa (układ dotyku trzyma zasilanie panelu) |
 
 ## Pierwsze uruchomienie
 
@@ -56,7 +56,7 @@ Mainsail i Moonraker nie mają hasła. Każdy w Twojej sieci lokalnej może ster
 
 ## Znane problemy
 
-- **Dotyk nie budzi wygaszonego ekranu.** Gdy KlipperScreen wyłącza ekran, jądro odcina też zasilanie układu dotyku (ma wspólne zasilanie z panelem), więc dotyk nie może go obudzić. Obejście: dłuższy czas wygaszania albo „nigdy” w KlipperScreen. Poprawka (`vcc-supply` w węźle dotyku) jest sprawdzona i jest już w nakładkach tego repozytorium; trafi do następnego obrazu Bosman20 i jest zgłaszana do Armbiana.
+- **Budzenie dotykiem w innych obrazach Armbiana.** Układ dotyku ma wspólne zasilanie z panelem. Bosman20 ma poprawkę nakładki (`vcc-supply` w węźle dotyku), która trzyma je włączone przy wygaszonym ekranie; dopóki nie zostanie przyjęta do Armbiana, inne obrazy Armbiana nie budzą ekranu dotykiem.
 - **Aktualizacje jądra:** dopóki nie wyjdzie oficjalne jądro Armbiana ze zmianami dla LeMakera, `apt upgrade` może zainstalować jądro bez obsługi ekranu. Zostaw jądro z obrazu: `sudo apt-mark hold linux-image-current-sunxi linux-dtb-current-sunxi`.
 
 ## Budowanie obrazu

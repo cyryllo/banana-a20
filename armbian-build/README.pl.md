@@ -48,6 +48,7 @@ Skrypt pobiera oficjalny [armbian/build](https://github.com/armbian/build) (domy
 | `--pulpit NAZWA` | `xfce` (domyślnie) albo `brak` (obraz minimal bez pulpitu) |
 | `--konsola` | konsola do gier [Arkada20](../arkada20/README.pl.md) (tylko z `--pulpit brak`) |
 | `--armbian REF` | gałąź, tag albo commit armbian/build (domyślnie `main`); stały commit daje ponownie ten sam obraz, np. do wydania |
+| `--repo URL` | inne repozytorium armbian/build, np. fork ze zmianą jeszcze nieprzyjętą (domyślnie `https://github.com/armbian/build.git`) |
 | `--katalog KATALOG` | katalog armbian/build (domyślnie `~/armbian-build`) |
 
 Wymagania są takie same jak niżej. Cotygodniowe oficjalne obrazy Armbiana dla Banana Pro (minimal, jądro `current`) mają tę samą obsługę ekranów, gdy są zbudowane z wersji po 2026-11-10; ten skrypt służy do obrazu z XFCE, ekranu włączonego od pierwszego startu, Arkady20 albo konkretnej wersji Armbiana.

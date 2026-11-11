@@ -17,6 +17,8 @@
 #   ./zbuduj-obraz-pr.sh --pulpit brak       # minimal bez pulpitu, LCD wylaczony
 #   ./zbuduj-obraz-pr.sh --pulpit brak --ekran 7 --konsola   # konsola do gier (RetroArch)
 #   ./zbuduj-obraz-pr.sh --armbian 4ebf24f5fe ...  # konkretny commit armbian/build
+#   ./zbuduj-obraz-pr.sh --repo https://github.com/cyryllo/build-armbian.git \
+#       --armbian sunxi-lemaker-lcd-touch-supply ...  # galaz z forka (zmiana przed scaleniem)
 
 set -euo pipefail
 
@@ -49,6 +51,8 @@ pomoc() {
 		      --gry DIR       gry dolaczone do obrazu konsoli, DIR/<system>/plik (np. DIR/mame2003/gra.zip);
 		                      obrazu z grami nie publikuj (prawa autorskie)
 		  -a, --armbian REF   galaz, tag albo commit armbian/build (domyslnie main)
+		  -r, --repo URL      inne repozytorium armbian/build, np. fork z galezia przed scaleniem
+		                      (domyslnie ${ARMBIAN_REPO})
 		  -k, --katalog DIR   katalog armbian/build (domyslnie ${BUILD_DIR})
 		  -h, --pomoc         ta pomoc
 	EOF
@@ -68,6 +72,7 @@ while [[ $# -gt 0 ]]; do
 		--klipper) KLIPPER="yes"; shift ;;
 		--gry) GRY="${2:-}"; shift 2 ;;
 		-a | --armbian) ARMBIAN_REF="${2:-}"; shift 2 ;;
+		-r | --repo) ARMBIAN_REPO="${2:-}"; shift 2 ;;
 		-k | --katalog) BUILD_DIR="${2:-}"; shift 2 ;;
 		-h | --pomoc) pomoc; exit 0 ;;
 		--) shift; EXTRA=("$@"); break ;;
@@ -131,8 +136,8 @@ wroc() {
 trap wroc EXIT
 
 # CO: pobranie oficjalnego armbian/build (ARMBIAN_REF) do lokalnej galezi zbuduj-obraz-pr.
-echo ">> Pobieram armbian/build ${ARMBIAN_REF}"
-git fetch -q "${ARMBIAN_REPO}" "${ARMBIAN_REF}" || blad "nie udalo sie pobrac armbian/build ${ARMBIAN_REF}"
+echo ">> Pobieram ${ARMBIAN_REPO} ${ARMBIAN_REF}"
+git fetch -q "${ARMBIAN_REPO}" "${ARMBIAN_REF}" || blad "nie udalo sie pobrac ${ARMBIAN_REPO} ${ARMBIAN_REF}"
 git checkout -q -B zbuduj-obraz-pr FETCH_HEAD
 # CO: kontrola, czy ta wersja Armbiana ma juz obsluge ekranow LeMaker.
 # DLACZEGO: ze starszego commita (sprzed 2026-11-10) wyszedlby obraz bez dotyku i nakladek.
