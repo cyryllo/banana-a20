@@ -56,7 +56,7 @@ Mainsail and Moonraker have no password. Anyone in your local network can contro
 
 ## Known issues
 
-- **Touch does not wake the dimmed screen.** When KlipperScreen turns the screen off, the kernel also cuts the power of the touch controller (it shares the panel supply), so touch cannot wake it. Workaround: set a longer blanking time or "never" in KlipperScreen. A fix in the panel overlays is being tested.
+- **Touch does not wake the dimmed screen.** When KlipperScreen turns the screen off, the kernel also cuts the power of the touch controller (it shares the panel supply), so touch cannot wake it. Workaround: set a longer blanking time or "never" in KlipperScreen. The fix (`vcc-supply` in the touch node) is tested and in the overlays of this repository; it will be in the next Bosman20 image and is proposed for Armbian.
 - **Kernel updates**: until an official Armbian kernel with the LeMaker changes is out, `apt upgrade` may install a kernel without the panel support. Keep the kernel: `sudo apt-mark hold linux-image-current-sunxi linux-dtb-current-sunxi`.
 
 ## Building the image

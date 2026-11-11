@@ -56,7 +56,7 @@ Mainsail i Moonraker nie mają hasła. Każdy w Twojej sieci lokalnej może ster
 
 ## Znane problemy
 
-- **Dotyk nie budzi wygaszonego ekranu.** Gdy KlipperScreen wyłącza ekran, jądro odcina też zasilanie układu dotyku (ma wspólne zasilanie z panelem), więc dotyk nie może go obudzić. Obejście: dłuższy czas wygaszania albo „nigdy” w KlipperScreen. Poprawka w nakładkach ekranów jest w trakcie testów.
+- **Dotyk nie budzi wygaszonego ekranu.** Gdy KlipperScreen wyłącza ekran, jądro odcina też zasilanie układu dotyku (ma wspólne zasilanie z panelem), więc dotyk nie może go obudzić. Obejście: dłuższy czas wygaszania albo „nigdy” w KlipperScreen. Poprawka (`vcc-supply` w węźle dotyku) jest sprawdzona i jest już w nakładkach tego repozytorium; trafi do następnego obrazu Bosman20 i jest zgłaszana do Armbiana.
 - **Aktualizacje jądra:** dopóki nie wyjdzie oficjalne jądro Armbiana ze zmianami dla LeMakera, `apt upgrade` może zainstalować jądro bez obsługi ekranu. Zostaw jądro z obrazu: `sudo apt-mark hold linux-image-current-sunxi linux-dtb-current-sunxi`.
 
 ## Budowanie obrazu

@@ -163,6 +163,12 @@
 	touchscreen@38 {
 		compatible = "edt,edt-ft5406";
 		reg = <0x38>;
+		/*
+		 * Uklad dotyku jest zasilany z linii panelu (PH12). Bez tego
+		 * sterownik panelu wylacza ja przy wygaszaniu ekranu (DPMS) i dotyk
+		 * nie moze obudzic ekranu. Z vcc-supply dotyk trzyma zasilanie.
+		 */
+		vcc-supply = <&lcd7_power>;
 		interrupt-parent = <&pio>;
 		interrupts = <7 9 2>;		/* PH9, zbocze opadajace */
 		/*
