@@ -10,9 +10,10 @@ LeMaker made the Banana Pro, its LCD panels and add-on boards around 2014-2015. 
 |---|---|---|
 | [LeMaker LCD panels](#lemaker-lcd-panels) | the 5" and 7" touch panels on the mainline kernel, ready images | done, merged into official Armbian |
 | [Arkada20](arkada20/README.md) | retro game console: the board boots straight into RetroArch, like Lakka | v1.0, tested with the 7" panel |
+| [Bosman20](bosman20/README.md) | 3D printer host: Klipper, Moonraker, Mainsail and KlipperScreen on the touchscreen, installed with KIAUH | first image, being tested |
 | [GPIO](gpio/README.md) | pinout, WiringBP (C, `gpio readall`) and LMK.GPIO (Python, RPi.GPIO API) fixed for the current kernel, lg (lgpio/rgpio) instead of pigpio, examples | done, tested on the board |
 
-Ready images are on the [Releases](https://github.com/cyryllo/banana-a20/releases) page: `v0.x-...` for the LCD images, `arkada20-...` for the game console.
+Ready images are on the [Releases](https://github.com/cyryllo/banana-a20/releases) page: `v0.x-...` for the LCD images, `arkada20-...` for the game console, `bosman20-...` for the printer host.
 
 ## LeMaker LCD panels
 
@@ -123,6 +124,7 @@ More: [gpio/README.md](gpio/README.md).
 | [`overlays/`](overlays/README.md) | Device Tree overlays for the LCD panels and their technical description |
 | [`armbian-build/`](armbian-build/README.md) | scripts to build the images yourself |
 | [`arkada20/`](arkada20/README.md) | the Arkada20 game console |
+| [`bosman20/`](bosman20/README.md) | the Bosman20 3D printer host |
 | [`gpio/`](gpio/README.md) | GPIO libraries, pinout, examples |
 | `stare jądro sunxi 3.4/` | original LeMaker `fex`/`bin` files for the old 3.4 kernel, kept as the source of the panel parameters |
 

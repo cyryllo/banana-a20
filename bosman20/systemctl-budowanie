@@ -1,0 +1,11 @@
+#!/bin/sh
+# Zastepczy systemctl tylko na czas budowania obrazu Bosman20 (usuwany na koncu).
+# CO: pomija uruchamianie i przeladowanie uslug, reszte przekazuje do systemctl.
+# DLACZEGO: w chroot obrazu nie dziala systemd; "enable" dziala bez niego,
+# a "start", "restart" czy "daemon-reload" koncza sie bledem i przerywaja KIAUH.
+case "$1" in
+	start | stop | restart | reload | try-restart | reload-or-restart | daemon-reload | reboot | poweroff | halt)
+		echo "systemctl (budowanie obrazu): pomijam: $*" >&2
+		exit 0 ;;
+esac
+exec /usr/bin/systemctl "$@"

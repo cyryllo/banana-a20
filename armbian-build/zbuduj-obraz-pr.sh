@@ -23,10 +23,13 @@ set -euo pipefail
 EKRAN="brak"
 PULPIT="xfce"
 KONSOLA="no"
+KLIPPER="no"
 GRY=""
 SKRYPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 # CO: pliki konsoli Arkada20 (katalog arkada20/ w glownym katalogu repozytorium).
 KONSOLA_DIR="$(dirname "${SKRYPT_DIR}")/arkada20"
+# CO: pliki hosta drukarki Bosman20 (katalog bosman20/).
+BOSMAN_DIR="$(dirname "${SKRYPT_DIR}")/bosman20"
 BUILD_DIR="${HOME}/armbian-build"
 ARMBIAN_REPO="https://github.com/armbian/build.git"
 # DLACZEGO mozliwosc podania commita: main sie zmienia, a przypiety commit
@@ -41,6 +44,8 @@ pomoc() {
 		  -p, --pulpit NAZWA  xfce (domyslnie) albo brak (obraz minimal bez pulpitu)
 		  -g, --konsola       konsola do gier: RetroArch na ekranie od startu, jak Lakka
 		                      (tylko z --pulpit brak; najpierw ../arkada20/zbuduj-rdzenie.sh)
+		      --klipper       Bosman20: Klipper, Moonraker, Mainsail, KlipperScreen przez KIAUH
+		                      (tylko z --pulpit brak; najpierw ../bosman20/zbuduj-pakiety-python.sh)
 		      --gry DIR       gry dolaczone do obrazu konsoli, DIR/<system>/plik (np. DIR/mame2003/gra.zip);
 		                      obrazu z grami nie publikuj (prawa autorskie)
 		  -a, --armbian REF   galaz, tag albo commit armbian/build (domyslnie main)
@@ -60,6 +65,7 @@ while [[ $# -gt 0 ]]; do
 		-e | --ekran) EKRAN="${2:-}"; shift 2 ;;
 		-p | --pulpit) PULPIT="${2:-}"; shift 2 ;;
 		-g | --konsola) KONSOLA="yes"; shift ;;
+		--klipper) KLIPPER="yes"; shift ;;
 		--gry) GRY="${2:-}"; shift 2 ;;
 		-a | --armbian) ARMBIAN_REF="${2:-}"; shift 2 ;;
 		-k | --katalog) BUILD_DIR="${2:-}"; shift 2 ;;
@@ -87,6 +93,16 @@ if [[ "${KONSOLA}" == "yes" ]]; then
 		blad "brak rdzeni, uruchom najpierw: ${KONSOLA_DIR}/zbuduj-rdzenie.sh"
 	[[ -x "${KONSOLA_DIR}/retroarch-bin/retroarch" ]] ||
 		blad "brak RetroArch, uruchom najpierw: ${KONSOLA_DIR}/zbuduj-retroarch.sh"
+fi
+# DLACZEGO Bosman20 tylko bez pulpitu: KlipperScreen uruchamia wlasny serwer X na ekranie.
+if [[ "${KLIPPER}" == "yes" ]]; then
+	[[ "${PULPIT}" == "brak" ]] || blad "--klipper dziala tylko z --pulpit brak"
+	[[ "${KONSOLA}" == "no" ]] || blad "--klipper i --konsola to dwa rozne systemy, wybierz jeden"
+	compgen -G "${BOSMAN_DIR}/wheels/*.whl" > /dev/null ||
+		blad "brak pakietow Pythona, uruchom najpierw: ${BOSMAN_DIR}/zbuduj-pakiety-python.sh"
+	# DLACZEGO: Armbian domyslnie nie przenosi /home do obrazu, a KIAUH instaluje
+	# wszystko w katalogu domowym uzytkownika (/home/bosman).
+	EXTRA=(INCLUDE_HOME_DIR=yes "${EXTRA[@]}")
 fi
 if [[ -n "${GRY}" ]]; then
 	[[ "${KONSOLA}" == "yes" ]] || blad "--gry dziala tylko z --konsola"
@@ -165,20 +181,30 @@ if [[ "${KONSOLA}" == "yes" ]]; then
 	fi
 	echo 'bash /tmp/overlay/konsola/customize-konsola.sh' >> "${UP}/customize-image.sh"
 fi
+if [[ "${KLIPPER}" == "yes" ]]; then
+	# CO: pliki Bosman20 i gotowe pakiety Pythona trafiaja do obrazu jako /tmp/overlay/bosman20.
+	mkdir -p "${UP}/overlay/bosman20"
+	cp -r "${BOSMAN_DIR}"/{customize-bosman20.sh,instaluj-stos.sh,systemctl-budowanie,wheels} "${UP}/overlay/bosman20/"
+	echo 'bash /tmp/overlay/bosman20/customize-bosman20.sh' >> "${UP}/customize-image.sh"
+fi
 
-echo ">> Buduje: pulpit=${PULPIT}, ekran=${EKRAN}, konsola=${KONSOLA}, jadro current, Debian 13 trixie"
+echo ">> Buduje: pulpit=${PULPIT}, ekran=${EKRAN}, konsola=${KONSOLA}, klipper=${KLIPPER}, jadro current, Debian 13 trixie"
 START=$(date +%s)
 ./compile.sh build USERPATCHES_PATH="${UP}" BOARD=bananapipro BRANCH=current RELEASE=trixie \
 	KERNEL_CONFIGURE=no "${PULPIT_OPCJE[@]}" "${EXTRA[@]}"
 
-# CO: obraz konsoli dostaje nazwe projektu: Arkada20_<data>_bananapipro_trixie_<jadro>.img
-# DLACZEGO: to osobny system (Arkada20), a Armbian nazywa go tak samo jak zwykly
-# obraz minimal (Armbian-unofficial_..._minimal.img) i nastepne budowanie by go nadpisalo.
-if [[ "${KONSOLA}" == "yes" ]]; then
+# CO: obraz konsoli albo hosta drukarki dostaje nazwe projektu:
+# Arkada20_<data>_bananapipro_trixie_<jadro>.img albo Bosman20_...
+# DLACZEGO: to osobne systemy, a Armbian nazywa je tak samo jak zwykly obraz
+# minimal (Armbian-unofficial_..._minimal.img) i nastepne budowanie by go nadpisalo.
+PROJEKT=""
+[[ "${KONSOLA}" == "yes" ]] && PROJEKT="Arkada20"
+[[ "${KLIPPER}" == "yes" ]] && PROJEKT="Bosman20"
+if [[ -n "${PROJEKT}" ]]; then
 	img=$(ls -1t "${BUILD_DIR}"/output/images/*Bananapipro*trixie*_minimal.img 2> /dev/null | head -1)
 	if [[ -n "${img}" && $(stat -c %Y "${img}") -ge ${START} ]]; then
 		jadro=$(basename "${img}" | sed -E 's/.*_current_([0-9.]+)_minimal\.img/\1/')
-		nowy="$(dirname "${img}")/Arkada20_$(date +%F)_bananapipro_trixie_${jadro}.img"
+		nowy="$(dirname "${img}")/${PROJEKT}_$(date +%F)_bananapipro_trixie_${jadro}.img"
 		mv "${img}" "${nowy}"
 		[[ -f "${img}.txt" ]] && mv "${img}.txt" "${nowy}.txt"
 		# DLACZEGO nowa suma: plik .sha Armbiana zawiera stara nazwe pliku.
