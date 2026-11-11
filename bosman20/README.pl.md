@@ -1,5 +1,7 @@
 [English](README.md) | **Polski**
 
+<p align="center"><img src="logo/bosman20-logo.svg" alt="Bosman20" width="520"></p>
+
 # Bosman20: host drukarki 3D na Banana Pro (Allwinner A20)
 
 Bosman20 zamienia LeMaker Banana Pro (Banana Pi Pro) z ekranem LCD LeMakera w gotowy host drukarki 3D: **Klipper**, **Moonraker**, **Mainsail** w przeglądarce i **KlipperScreen** na ekranie dotykowym. Nagrywasz obraz na kartę SD, podłączasz płytkę drukarki przez USB, ustawiasz Wi-Fi palcem i drukujesz.
@@ -78,6 +80,9 @@ Obraz to `~/armbian-build/output/images/Bosman20_<data>_bananapipro_trixie_<jąd
 | `customize-bosman20.sh` | uruchamiany wewnątrz obrazu przy budowaniu: konto, instalacja przez KIAUH, NetworkManager, nazwa `bosman20` |
 | `instaluj-stos.sh` | polecenia KIAUH (`install klipper`, `moonraker`, `mainsail`) i instalator KlipperScreen |
 | `systemctl-budowanie` | zastępczy `systemctl` tylko na czas budowania: uruchomić usług bez systemd się nie da, włączyć można |
+| `logo/` | logo i jego generator |
+
+W `logo/` jest logo Bosman20 (SVG i PNG, z tłem i bez, oraz kwadratowa ikona), tworzone przez `logo/generuj-logo.py`: układ A20 ze sterem okrętowym, którego piastą jest dysza drukarki, i litery rysowane jak warstwy wydruku, więc logo nie zależy od zainstalowanych czcionek.
 
 Przy budowaniu obrazu programy ARM działają przez emulację QEMU, w której `sudo` nie podnosi uprawnień zwykłego użytkownika. Instalatory działają więc jako root z `HOME`, `USER` i `LOGNAME` użytkownika `bosman`, a na koniec pliki dostają właściciela `bosman`. Wynik jest taki sam jak przy instalacji ręcznej.
 
