@@ -9,7 +9,7 @@ LeMaker made the Banana Pro, its LCD panels and add-on boards around 2014-2015. 
 | Project | What it is | Status |
 |---|---|---|
 | [LeMaker LCD panels](#lemaker-lcd-panels) | the 5" and 7" touch panels on the mainline kernel, ready images | done, merged into official Armbian |
-| [Arkada20](arkada20/README.md) | retro game console: the board boots straight into RetroArch, like Lakka | v1.0, tested with the 7" panel |
+| [Arkada20](arkada20/README.md) | retro game console: the board boots straight into RetroArch, like Lakka | v1.1, tested with the 7" panel |
 | [Bosman20](bosman20/README.md) | 3D printer host: Klipper, Moonraker, Mainsail and KlipperScreen on the touchscreen, installed with KIAUH | first image, being tested |
 | [GPIO](gpio/README.md) | pinout, WiringBP (C, `gpio readall`) and LMK.GPIO (Python, RPi.GPIO API) fixed for the current kernel, lg (lgpio/rgpio) instead of pigpio, examples | done, tested on the board |
 

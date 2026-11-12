@@ -8,15 +8,46 @@ cabinet running RetroArch as the only frontend (KMS, no desktop) there
 was no way to power off from the menu. The entries can still be hidden
 with menu_show_reboot / menu_show_shutdown.
 
+Version for RetroArch master 4206fe8 (settings in settings/*.h).
+
 ---
---- a/menu/menu_setting.c
-+++ b/menu/menu_setting.c
-@@ -10593,7 +10593,7 @@
-               parent_group);
+diff --git a/menu/menu_displaylist.c b/menu/menu_displaylist.c
+index d1f9f91fcd..38219161e6 100644
+--- a/menu/menu_displaylist.c
++++ b/menu/menu_displaylist.c
+@@ -18707,11 +18707,13 @@ static bool menu_displaylist_ctl_internal(
+                      count++;
  #endif
  
 -#if defined(HAVE_LAKKA)
 +#if defined(HAVE_LAKKA) || (defined(__linux__) && !defined(ANDROID))
-          CONFIG_ACTION(
-                list, list_info,
-                MENU_ENUM_LABEL_REBOOT,
+                if (settings->bools.menu_show_reboot)
+                {
++#if defined(HAVE_LAKKA)
+                   /* What the Reboot entry's value shows. */
+                   lakka_update_check();
++#endif
+                   if (MENU_DISPLAYLIST_PARSE_SETTINGS_ENUM(info->list,
+                            MENU_ENUM_LABEL_REBOOT,
+                            PARSE_ACTION, false) == 0)
+diff --git a/settings/settings_def_menu_main_lists_3.h b/settings/settings_def_menu_main_lists_3.h
+index 27a290ea22..a22430d9e9 100644
+--- a/settings/settings_def_menu_main_lists_3.h
++++ b/settings/settings_def_menu_main_lists_3.h
+@@ -12,14 +12,14 @@ S_ACTION(SWITCH_CPU_PROFILE,
+ #endif
+ /* Descriptor and configuration rows are #if defined(HAVE_LAKKA); the string
+  * tables always carry this row via the strings pass. */
+-#if defined(HAVE_LAKKA) || defined(SETTINGS_DEF_STRINGS_PASS)
++#if defined(HAVE_LAKKA) || (defined(__linux__) && !defined(ANDROID)) || defined(SETTINGS_DEF_STRINGS_PASS)
+ S_ACTION_EX_NS(REBOOT,
+       "reboot", SD_FLAG_NONE, NULL, NULL, CMD_EVENT_REBOOT,
+       "Reboot")
+ #endif
+ /* Descriptor and configuration rows are #if defined(HAVE_LAKKA); the string
+  * tables always carry this row via the strings pass. */
+-#if defined(HAVE_LAKKA) || defined(SETTINGS_DEF_STRINGS_PASS)
++#if defined(HAVE_LAKKA) || (defined(__linux__) && !defined(ANDROID)) || defined(SETTINGS_DEF_STRINGS_PASS)
+ S_ACTION_EX_NS(SHUTDOWN,
+       "shutdown", SD_FLAG_NONE, NULL, NULL, CMD_EVENT_SHUTDOWN,
+       "Shutdown")

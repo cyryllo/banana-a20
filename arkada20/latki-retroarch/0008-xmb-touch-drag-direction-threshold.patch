@@ -1,0 +1,48 @@
+From: Cyryl Sochacki <cyrylsochacki@gmail.com>
+Subject: [PATCH] xmb: scale the drag direction threshold, favour horizontal at the top level
+
+XMB locks a touch drag to horizontal (switch categories) or vertical
+(scroll the list) after only 10 px of movement, by whichever axis moved
+more. On a small panel (7", 1024x600, ~169 DPI) 10 px is about 1.5 mm,
+so the first jitter of the finger decides, and a left/right swipe that
+starts slightly slanted scrolls the list instead.
+
+Scale the threshold with the screen height (3%, at least 10 px) and, at
+the top level where a horizontal drag switches categories, accept a
+slanted swipe (up to about 53 degrees) as horizontal.
+
+Tested on a Banana Pro with a 7" LeMaker panel (FT5x06 touch).
+
+---
+diff --git a/menu/drivers/xmb.c b/menu/drivers/xmb.c
+index c3f50965e8..676c7688cc 100644
+--- a/menu/drivers/xmb.c
++++ b/menu/drivers/xmb.c
+@@ -7558,12 +7558,24 @@ static void xmb_render(void *data,
+             /* Wait for movement threshold before locking direction */
+             float dx        = fabs((float)VIDEO_POS_X(xmb->pointer.pos) - xmb->drag_start_x);
+             float dy        = fabs((float)VIDEO_POS_Y(xmb->pointer.pos) - xmb->drag_start_y);
+-            float threshold = 10.0f;
++            /* A fixed 10 px is about 1.5 mm on a small panel: the first
++             * jitter of a finger decides the direction. Scale the
++             * threshold with the screen height (3%, at least 10 px). */
++            float threshold = (float)VIDEO_SCALE_H(dims) * 0.03f;
++
++            if (threshold < 10.0f)
++               threshold = 10.0f;
+ 
+             if (dx > threshold || dy > threshold)
+             {
+-               /* Lock to dominant direction */
+-               if (dx > dy)
++               /* Lock to dominant direction. At the top level a
++                * horizontal drag switches categories; a finger swipe is
++                * rarely flat, so accept up to ~53 degrees as horizontal
++                * there. Vertical drags stay vertical. */
++               float h_bias = (xmb->depth == 1 && xmb->show_horizontal_list)
++                     ? 0.75f : 1.0f;
++
++               if (dx > dy * h_bias)
+                   xmb->drag_mode = XMB_DRAG_HORIZONTAL;
+                else
+                   xmb->drag_mode = XMB_DRAG_VERTICAL;

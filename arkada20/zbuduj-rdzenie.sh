@@ -37,7 +37,9 @@ gambatte|gambatte-libretro|.|Makefile.libretro|rpi2
 genesis_plus_gx|Genesis-Plus-GX|.|Makefile.libretro|rpi2
 '
 
-docker run --rm -i -v "${OUT}:/out" -e RDZENIE="${RDZENIE}" -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
+# DLACZEGO --platform: kompilujemy krzyzowo na komputerze x86; bez tego docker
+# moze wziac lokalny obraz debian:trixie dla ARM (np. po bosman20/zbuduj-pakiety-python.sh).
+docker run --rm -i --platform linux/amd64 -v "${OUT}:/out" -e RDZENIE="${RDZENIE}" -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
 	debian:trixie bash -euo pipefail << 'EOF'
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq

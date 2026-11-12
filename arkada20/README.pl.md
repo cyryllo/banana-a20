@@ -12,13 +12,13 @@ Nazwy w menu RetroArch są po angielsku (tak jak na ekranie konsoli), poza pozyc
 
 ## Pobieranie
 
-Gotowy obraz: [Releases](https://github.com/cyryllo/banana-a20/releases), tagi zaczynające się od `arkada20-` (pierwszy: [arkada20-v1.0-trixie-6.18.62](https://github.com/cyryllo/banana-a20/releases/tag/arkada20-v1.0-trixie-6.18.62)). Nagraj go na kartę SD programem [USBImager](https://gitlab.com/bztsrc/usbimager) albo balenaEtcher.
+Gotowy obraz: [Releases](https://github.com/cyryllo/banana-a20/releases), tagi zaczynające się od `arkada20-` (najnowszy: [arkada20-v1.1-trixie-6.18.63](https://github.com/cyryllo/banana-a20/releases/tag/arkada20-v1.1-trixie-6.18.63)). Nagraj go na kartę SD programem [USBImager](https://gitlab.com/bztsrc/usbimager) albo balenaEtcher.
 
 | Co | Stan |
 |---|---|
 | ekran 7" (automat) | sprawdzone: obraz, dźwięk, pady, Wi-Fi z menu |
 | ekran 5" (konsolka) | ekran działa z tą samą nakładką, z Arkadą20 jeszcze nie sprawdzony |
-| dotyk w menu | eksperymentalny, domyślnie wyłączony |
+| dotyk w menu | w v1.1 dużo lepszy, ale dalej zdarzają się zacięcia; domyślnie wyłączony |
 | Banana Pi (bez „Pro”) | powinno działać jak obrazy z ekranami, z Arkadą20 nie sprawdzone |
 
 ## Pierwsze uruchomienie
@@ -81,9 +81,11 @@ Arkada20 domyślnie używa menu **XMB**. RetroArch ma cztery style menu, zmienia
 
 Wszystkie cztery działają z padem. Klawiatura ekranowa ma wszystkie klawisze specjalne (Backspace, Enter, Shift) w każdym menu.
 
-## Ekran dotykowy (eksperymentalny)
+## Ekran dotykowy
 
-Dotyk w menu jest **domyślnie wyłączony**. Układ dotyku ekranów LeMakera (FocalTech FT5x06) zgłasza „duchy”, czyli dodatkowe dotknięcia, których nie było, a przy dwóch punktach dotyku menu RetroArch potrafi się zaciąć. Żeby mimo to spróbować: **Settings → User Interface → Touch Support** (po polsku: *Ustawienia → Interfejs użytkownika → Obsługa dotyku*, ustawienie `menu_pointer_enable`). Zmiana działa od razu. Dotyk najlepiej działa w Material UI i Ozone; XMB jest zrobione pod pad (stuknięcie tylko przesuwa zaznaczenie).
+Dotyk w menu jest **domyślnie wyłączony**, konsola jest pomyślana pod pad. Od v1.1 dotyk jest dużo lepszy, ale dalej zdarzają się zacięcia. Po włączeniu stuknięcie zaznacza i otwiera pozycję, przeciąganie przewija listy, a w XMB przesunięcie palcem w lewo lub w prawo zmienia kategorię. Na głównym poziomie menu kategorię zmienia też ruch w lewo lub w prawo lekko po skosie (poprawka 0008). Włączenie dotyku: **Settings → User Interface → Touch Support** (po polsku: *Ustawienia → Interfejs użytkownika → Obsługa dotyku*, ustawienie `menu_pointer_enable`).
+
+Dlaczego domyślnie wyłączony: po kilku godzinach układ dotyku ekranów LeMakera (FT5x06) potrafi się rozkalibrować i przy jednym palcu zgłaszać mnóstwo fałszywych punktów, aż dotyk w menu przestaje reagować (pad działa dalej). Arkada20 resetuje układ dotyku przy każdym starcie RetroArch (`konsola-reset-dotyku`), więc restart RetroArch z menu przywraca dotyk. W v1.0 (RetroArch 1.20.0) sam dotyk działał niepewnie. Poprawki do naszych zgłoszeń [#20060](https://github.com/libretro/RetroArch/issues/20060) i [#20061](https://github.com/libretro/RetroArch/issues/20061) są już w samym RetroArch, a v1.1 używa RetroArch z tymi poprawkami.
 
 ## Ekran
 
@@ -111,16 +113,14 @@ Obraz to `~/armbian-build/output/images/Arkada20_<data>_bananapipro_trixie_<jąd
 
 ### Czym różni się od zwykłego RetroArch
 
-RetroArch 1.20.0 jest kompilowany ze źródeł (bez X11, obraz przez KMS i OpenGL ES na sterowniku `lima` dla Mali-400, wejście przez udev, Wi-Fi przez NetworkManager) z tymi poprawkami:
+RetroArch jest kompilowany ze źródeł (bez X11, obraz przez KMS i OpenGL ES na sterowniku `lima` dla Mali-400, wejście przez udev, Wi-Fi przez NetworkManager). Od v1.1 to wersja rozwojowa (`master`) z commita `4206fe8` (2026-11-12), sprawdzona na płytce: poprawki dotyku i rozmiaru ekranu są tylko tam, ostatnie wydanie (1.22.2) jest z listopada 2025. Dochodzą dwie poprawki:
 
 | Poprawka | Co naprawia |
 |---|---|
-| 0001 | dotyk: puszczenie wskaźnika po zdjęciu ostatniego palca |
-| 0002 | dotyk: przekazywanie pozycji i wciśnięcia wskaźnika (zbędne `break` zwracało 0) |
-| 0003 | KMS: rozmiar ekranu i DPI, potrzebne do przeciągania i gestów przesunięcia |
 | 0005 | menu: Restart i Wyłącz na Linuksie, nie tylko w Lakce |
-| 0006 | polski napis „Zamknij system” dla wyłączania |
-| 0007 | dotyk: pomijanie emulacji pojedynczego dotyku z jądra na ekranach wielodotykowych |
+| 0008 | dotyk w XMB: kierunek przesuwania rozstrzygany po ok. 3 mm zamiast 1,5 mm, a na głównym poziomie ruch po skosie też zmienia kategorię |
+
+Arkada20 v1.0 używała RetroArch 1.20.0 z naszymi poprawkami dotyku i DPI (0001, 0002, 0003, 0007) oraz polskiego napisu (0006); są w historii git pod tagiem `arkada20-v1.0-trixie-6.18.62`. Ikony menu, opisy rdzeni, profile padów i bazy gier zostają w wersji 1.20.0, działają z nowszym RetroArch.
 
 Debianowe czcionki menu (Roboto) nie mają symboli klawiatury ekranowej, więc obraz podmienia je na DejaVu Sans.
 
@@ -136,11 +136,12 @@ RetroArch i kilka emulatorów jest na licencji GPL: udostępniając zbudowany ob
 | `retroarch.cfg` | ustawienia RetroArch w obrazie (tylko wartości inne niż domyślne) |
 | `retroarch-konsola.service` | uruchamia RetroArch na ekranie przy starcie |
 | `konsola-listy`, `konsola-listy.service`, `.path` | tworzy listy gier (jedna ikona na system) i odświeża je, gdy zmienią się pliki |
+| `konsola-reset-dotyku` | resetuje układ dotyku przed startem RetroArch (świeża kalibracja) |
 | `avahi-samba.service` | ogłasza udziały sieciowe w sieci lokalnej (`arkada20.local`) |
 | `autoconfig/udev/` | dodatkowe profile padów |
 | `zbuduj-rdzenie.sh` | kompiluje krzyżowo emulatory do `rdzenie/` |
 | `zbuduj-retroarch.sh` | kompiluje krzyżowo RetroArch z poprawkami do `retroarch-bin/` |
-| `latki-retroarch/` | poprawki RetroArch (zgłoszone twórcom jako [#20060](https://github.com/libretro/RetroArch/issues/20060) i [#20061](https://github.com/libretro/RetroArch/issues/20061)) |
+| `latki-retroarch/` | poprawki RetroArch (Restart i Wyłączanie w menu, przesuwanie palcem w XMB) oraz tekst naszych zgłoszeń [#20060](https://github.com/libretro/RetroArch/issues/20060) i [#20061](https://github.com/libretro/RetroArch/issues/20061) (poprawione przez twórców) |
 | `logo/` | logo i jego generator |
 
 `rdzenie/` i `retroarch-bin/` to wyniki budowania, nie ma ich w git.

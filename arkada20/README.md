@@ -10,13 +10,13 @@ Made for two setups: a handheld with the 5" panel and an arcade cabinet with the
 
 ## Download
 
-Ready image: [Releases](https://github.com/cyryllo/banana-a20/releases), tags starting with `arkada20-` (first: [arkada20-v1.0-trixie-6.18.62](https://github.com/cyryllo/banana-a20/releases/tag/arkada20-v1.0-trixie-6.18.62)). Write it to an SD card with [USBImager](https://gitlab.com/bztsrc/usbimager) or balenaEtcher.
+Ready image: [Releases](https://github.com/cyryllo/banana-a20/releases), tags starting with `arkada20-` (latest: [arkada20-v1.1-trixie-6.18.63](https://github.com/cyryllo/banana-a20/releases/tag/arkada20-v1.1-trixie-6.18.63)). Write it to an SD card with [USBImager](https://gitlab.com/bztsrc/usbimager) or balenaEtcher.
 
 | What | Status |
 |---|---|
 | 7" panel (arcade cabinet) | tested: picture, sound, gamepads, Wi-Fi from the menu |
 | 5" panel (handheld) | the panel works with the same overlay, not yet tested with Arkada20 |
-| touchscreen in the menu | experimental, off by default |
+| touchscreen in the menu | much improved in v1.1, still with occasional hiccups; off by default |
 | Banana Pi (non-"Pro") | should work like the LCD images, not tested with Arkada20 |
 
 ## First boot
@@ -79,9 +79,11 @@ Arkada20 uses **XMB** by default. RetroArch has four menu styles, switch them in
 
 All four work with a gamepad. The on-screen keyboard has all special keys (Backspace, Enter, Shift) in every menu.
 
-## Touchscreen (experimental)
+## Touchscreen
 
-Touch in the menu is **off by default**. The touch controller of the LeMaker panels (FocalTech FT5x06) reports phantom second contacts, and with two contacts the RetroArch menu can freeze. To try it anyway: **Settings → User Interface → Touch Support** (Polish: *Ustawienia → Interfejs użytkownika → Obsługa dotyku*, setting `menu_pointer_enable`). It takes effect immediately. Touch works best with Material UI and Ozone; XMB is designed for a gamepad (a tap only moves the selection).
+Touch in the menu is **off by default**, the console is meant for a gamepad. Since v1.1 touch is much improved, but it still hiccups now and then. When turned on, a tap selects and opens an entry, dragging scrolls lists, and in XMB a left/right swipe changes the category. At the top level of the menu a slanted left/right swipe also switches the category (patch 0008). To turn touch on: **Settings → User Interface → Touch Support** (Polish: *Ustawienia → Interfejs użytkownika → Obsługa dotyku*, setting `menu_pointer_enable`).
+
+Why off by default: after some hours the touch controller of the LeMaker panels (FT5x06) can lose its calibration and report many phantom contacts for one finger, until touch in the menu stops reacting (the gamepad keeps working). Arkada20 resets the touch controller every time RetroArch starts (`konsola-reset-dotyku`), so restarting RetroArch from the menu brings touch back. In v1.0 (RetroArch 1.20.0) touch itself was unreliable. The fixes for our reports [#20060](https://github.com/libretro/RetroArch/issues/20060) and [#20061](https://github.com/libretro/RetroArch/issues/20061) are now in RetroArch itself, and v1.1 uses a RetroArch build with them.
 
 ## Screen
 
@@ -109,16 +111,14 @@ The image is `~/armbian-build/output/images/Arkada20_<date>_bananapipro_trixie_<
 
 ### What is different from stock RetroArch
 
-RetroArch 1.20.0 is built from source (no X11, KMS + OpenGL ES on the Mali-400 `lima` driver, udev input, Wi-Fi through NetworkManager) with these patches:
+RetroArch is built from source (no X11, KMS + OpenGL ES on the Mali-400 `lima` driver, udev input, Wi-Fi through NetworkManager). Since v1.1 it is the development version (`master`) at commit `4206fe8` (2026-11-12), tested on the board: the touch and display size fixes are only there, the last release (1.22.2) is from November 2025. Two patches are added:
 
 | Patch | Fix |
 |---|---|
-| 0001 | touch: release the pointer after the last contact |
-| 0002 | touch: report the pointer position and press state (a stray `break` returned 0) |
-| 0003 | KMS: report the display size and DPI, needed for dragging and swipe gestures |
 | 0005 | menu: show Restart and Shutdown on Linux, not only on Lakka |
-| 0006 | Polish label "Zamknij system" for Shutdown |
-| 0007 | touch: ignore the kernel single-touch emulation on multi-touch devices |
+| 0008 | XMB touch: the drag direction is decided after about 3 mm instead of 1.5 mm, and at the top level a slanted swipe still switches the category |
+
+Arkada20 v1.0 used RetroArch 1.20.0 with our own touch and DPI patches (0001, 0002, 0003, 0007) and a Polish label patch (0006); they are in the git history of the `arkada20-v1.0-trixie-6.18.62` tag. Menu icons, core info, gamepad profiles and game databases stay at 1.20.0, they work with the newer RetroArch.
 
 The Debian fonts of the menus (Roboto) lack the on-screen keyboard symbols, the image links them to DejaVu Sans instead.
 
@@ -134,11 +134,12 @@ RetroArch and several cores are GPL: when you share a built image, also share th
 | `retroarch.cfg` | RetroArch settings of the image (only the values that differ from the defaults) |
 | `retroarch-konsola.service` | starts RetroArch on the screen at boot |
 | `konsola-listy`, `konsola-listy.service`, `.path` | builds the game lists (one icon per system) and updates them when files change |
+| `konsola-reset-dotyku` | resets the touch controller before RetroArch starts (fresh calibration) |
 | `avahi-samba.service` | announces the network shares (`arkada20.local`) |
 | `autoconfig/udev/` | extra gamepad profiles |
 | `zbuduj-rdzenie.sh` | cross-compiles the libretro cores into `rdzenie/` |
 | `zbuduj-retroarch.sh` | cross-compiles RetroArch with the patches into `retroarch-bin/` |
-| `latki-retroarch/` | RetroArch patches (reported upstream as [#20060](https://github.com/libretro/RetroArch/issues/20060) and [#20061](https://github.com/libretro/RetroArch/issues/20061)) |
+| `latki-retroarch/` | RetroArch patches (Restart/Shutdown in the menu, XMB touch swipe), and the text of our reports [#20060](https://github.com/libretro/RetroArch/issues/20060) and [#20061](https://github.com/libretro/RetroArch/issues/20061) (fixed upstream) |
 | `logo/` | the logo and its generator |
 
 `rdzenie/` and `retroarch-bin/` are build results, not in git.

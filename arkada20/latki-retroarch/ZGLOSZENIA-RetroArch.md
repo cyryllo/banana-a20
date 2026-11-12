@@ -1,3 +1,14 @@
+# Zgloszenia do RetroArch: stan
+
+| Zgloszenie | Poprawka tworcow | Test na plytce |
+|---|---|---|
+| [#20060](https://github.com/libretro/RetroArch/issues/20060) dotyk w udev | `cec7ea5` (2026-11-11), wszystkie 3 bledy + panele bez slotow, palec przy starcie, minimum osi, test w CI | 2026-11-12, master `4206fe8` bez naszych latek: stukniecie, przewijanie, 0 bledow "Cannot report touch up" |
+| [#20061](https://github.com/libretro/RetroArch/issues/20061) KMS bez rozmiaru ekranu (DPI 0) | `05a6797` (2026-11-11), w `dispserv_kms.c` | 2026-11-12: System Information 154 x 86 mm, przesuwanie kategorii XMB dziala |
+
+Uwaga z testu: w XMB przesuniecie palcem po skosie bywa brane za przewijanie listy w pionie; to sprawa interfejsu XMB, nie obslugi dotyku (wspomniane w odpowiedzi do #20061).
+
+Arkada20 v1.1 uzywa RetroArch `4206fe8` z dwiema naszymi latkami: 0005 (restart i wylaczanie w menu) i 0008 (kierunek przesuwania palcem w XMB). Dotyk w menu domyslnie wylaczony: po kilku godzinach uklad dotyku potrafi sie rozkalibrowac (ok. 30 punktow na stukniecie zamiast 1-3, nagranie evtest 2026-11-12), co nadal blokuje dotyk w RetroArch; reset ukladu (konsola-reset-dotyku) to naprawia. Latki 0001, 0002, 0003, 0006 i 0007 dla 1.20.0 sa w historii git (tag `arkada20-v1.0-trixie-6.18.62`); ponizej oryginalna tresc zgloszen.
+
 # Issue 1
 
 **Title:** udev: touchscreen pointer never pressed/released correctly (KMS, UDEV_TOUCH_SUPPORT)

@@ -177,7 +177,7 @@ if [[ "${KONSOLA}" == "yes" ]]; then
 	# CO: pliki konsoli trafiaja do obrazu jako /tmp/overlay/konsola (katalog overlay/ z userpatches).
 	mkdir -p "${UP}/overlay/konsola/rdzenie"
 	cp -r "${KONSOLA_DIR}"/autoconfig "${KONSOLA_DIR}"/retroarch-bin "${UP}/overlay/konsola/"
-	cp "${KONSOLA_DIR}"/{customize-konsola.sh,retroarch.cfg,retroarch-konsola.service,konsola-listy,konsola-listy.service,konsola-listy.path,avahi-samba.service} "${UP}/overlay/konsola/"
+	cp "${KONSOLA_DIR}"/{customize-konsola.sh,retroarch.cfg,retroarch-konsola.service,konsola-reset-dotyku,konsola-listy,konsola-listy.service,konsola-listy.path,avahi-samba.service} "${UP}/overlay/konsola/"
 	cp "${KONSOLA_DIR}"/rdzenie/{*_libretro.so,WERSJE.txt} "${UP}/overlay/konsola/rdzenie/"
 	if [[ -n "${GRY}" ]]; then
 		mkdir -p "${UP}/overlay/konsola/gry"
