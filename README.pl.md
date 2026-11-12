@@ -9,7 +9,7 @@ LeMaker produkował Banana Pro, ekrany LCD i płytki rozszerzeń w latach 2014-2
 | Projekt | Co to jest | Stan |
 |---|---|---|
 | [Ekrany LCD LeMaker](#ekrany-lcd-lemaker) | ekrany dotykowe 5" i 7" na jądrze mainline, gotowe obrazy | gotowe, przyjęte do oficjalnego Armbiana |
-| [Arkada20](arkada20/README.pl.md) | konsola do gier retro: płytka od razu uruchamia RetroArch, jak Lakka | v1.0, sprawdzona z ekranem 7" |
+| [Arkada20](arkada20/README.pl.md) | konsola do gier retro: płytka od razu uruchamia RetroArch, jak Lakka | v1.1, sprawdzona z ekranem 7" |
 | [Bosman20](bosman20/README.pl.md) | host drukarki 3D: Klipper, Moonraker, Mainsail i KlipperScreen na ekranie dotykowym, instalowane przez KIAUH | pierwszy obraz, w testach |
 | [GPIO](gpio/README.pl.md) | grafika pinów, WiringBP (C, `gpio readall`) i LMK.GPIO (Python, API RPi.GPIO) poprawione pod obecne jądro, lg (lgpio/rgpio) zamiast pigpio, przykłady | gotowe, sprawdzone na płytce |
 

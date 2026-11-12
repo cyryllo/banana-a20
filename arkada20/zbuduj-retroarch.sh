@@ -7,24 +7,30 @@
 # DLACZEGO wlasny, a nie z Debiana: Debianowy RetroArch nie ma obslugi ekranu
 # dotykowego (UDEV_TOUCH_SUPPORT nie jest nigdzie definiowane, trzeba podac
 # przy kompilacji) ani sterownika Wi-Fi (--enable-wifi = sterownik nmcli).
-# DLACZEGO v1.20.0: ta sama wersja co retroarch-assets, libretro-core-info,
-# profile padow i bazy gier w obrazie.
+# DLACZEGO commit z master (4206fe8 z 2026-11-12), a nie wydanie: poprawki dotyku
+#     i rozmiaru ekranu (nasze zgloszenia #20060, #20061) sa tylko w master,
+#     ostatnie wydanie to 1.22.2 z listopada 2025. Ten commit jest sprawdzony na
+#     plytce. Arkada20 v1.0 uzywala v1.20.0 z naszymi latkami (jest w historii git).
 #
 # Uzycie: ./zbuduj-retroarch.sh [katalog_wyjsciowy]   (domyslnie ./retroarch-bin)
 #         DODATKOWE_CFLAGS="-D..." ./zbuduj-retroarch.sh katalog   (np. wersja diagnostyczna)
 #         LATKI_DIR=/inny/katalog ./zbuduj-retroarch.sh katalog    (inne latki niz latki-retroarch/)
 #         Z_SYMBOLAMI=1 DODATKOWE_CFLAGS="-g" ./zbuduj-retroarch.sh katalog  (do gdb, bez strip)
+#         WERSJA=master LATKI_DIR=/pusty/katalog ./zbuduj-retroarch.sh katalog  (inna wersja:
+#                tag, galaz albo pelny hash; latki z latki-retroarch/ sa dla domyslnej)
 # Wynik: <katalog>/retroarch oraz WERSJA.txt
 
 set -euo pipefail
 
 SKRYPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 OUT=$(realpath -m "${1:-${SKRYPT_DIR}/retroarch-bin}")
-WERSJA=v1.20.0
+WERSJA="${WERSJA:-4206fe8f5235dd57a1dab9e3e03164c8f09de518}"
 mkdir -p "${OUT}"
 command -v docker > /dev/null || { echo "BLAD: brak dockera" >&2; exit 1; }
 
-docker run --rm -i -v "${OUT}:/out" -v "${LATKI_DIR:-${SKRYPT_DIR}/latki-retroarch}:/latki:ro" -e WERSJA="${WERSJA}" -e DODATKOWE_CFLAGS="${DODATKOWE_CFLAGS:-}" -e Z_SYMBOLAMI="${Z_SYMBOLAMI:-}" -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
+# DLACZEGO --platform: kompilujemy krzyzowo na komputerze x86; bez tego docker
+# moze wziac lokalny obraz debian:trixie dla ARM (np. po bosman20/zbuduj-pakiety-python.sh).
+docker run --rm -i --platform linux/amd64 -v "${OUT}:/out" -v "${LATKI_DIR:-${SKRYPT_DIR}/latki-retroarch}:/latki:ro" -e WERSJA="${WERSJA}" -e DODATKOWE_CFLAGS="${DODATKOWE_CFLAGS:-}" -e Z_SYMBOLAMI="${Z_SYMBOLAMI:-}" -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
 	debian:trixie bash -euo pipefail << 'EOF'
 export DEBIAN_FRONTEND=noninteractive
 T=arm-linux-gnueabihf
@@ -47,8 +53,13 @@ exec pkgconf "$@"
 PKG
 chmod +x /usr/local/bin/${T}-pkg-config
 
-git clone -q --depth 1 --branch "${WERSJA}" https://github.com/libretro/RetroArch.git /src
+# CO: pobranie wersji WERSJA: tag, galaz albo pelny hash commita.
+# DLACZEGO fetch zamiast clone --branch: clone --branch nie przyjmuje hasha, a
+#     przypiety commit z master daje powtarzalny build (master sie zmienia).
+git init -q /src
 cd /src
+git fetch -q --depth 1 https://github.com/libretro/RetroArch.git "${WERSJA}"
+git checkout -q FETCH_HEAD
 # CO: nasze poprawki RetroArch (latki-retroarch/*.patch), np. dotyk w udev.
 for l in /latki/*.patch; do
 	[ -e "${l}" ] || continue
@@ -69,7 +80,7 @@ make -j"$(nproc)" > /out/make.log 2>&1 || { tail -30 /out/make.log; exit 1; }
 [ -n "${Z_SYMBOLAMI}" ] || ${T}-strip retroarch
 cp retroarch /out/retroarch
 echo "RetroArch ${WERSJA} $(git rev-parse --short HEAD), CFLAGS: ${CFLAGS}" > /out/WERSJA.txt
-cat /out/WERSJA-latki.txt >> /out/WERSJA.txt 2> /dev/null; rm -f /out/WERSJA-latki.txt
+cat /out/WERSJA-latki.txt >> /out/WERSJA.txt 2> /dev/null || true; rm -f /out/WERSJA-latki.txt
 grep -E "HAVE_(KMS|EGL|OPENGLES|UDEV|ALSA|WIFI|FREETYPE|NEON|XKBCOMMON|X11|QT)\b" config.mk | tr '\n' ' ' >> /out/WERSJA.txt
 rm -f /out/make.log
 chown -R "${HOST_UID}:${HOST_GID}" /out

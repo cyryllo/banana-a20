@@ -9,9 +9,10 @@ SRC=/tmp/overlay/konsola
 ROMS=/home/roms
 LR=/usr/lib/arm-linux-gnueabihf/libretro
 SHARE=/usr/share/libretro
-# DLACZEGO v1.20.0: wersja naszego RetroArch (zbuduj-retroarch.sh) i Debianowych
-# retroarch-assets/libretro-core-info; profile padow i bazy gier sa wydawane
-# razem z RetroArch pod tym samym numerem.
+# DLACZEGO v1.20.0: wersja Debianowych retroarch-assets/libretro-core-info; profile
+# padow i bazy gier sa wydawane pod tym samym numerem. Nasz RetroArch jest nowszy
+# (commit z master, zbuduj-retroarch.sh), ale z tymi plikami dziala poprawnie
+# (sprawdzone na plytce 2026-11-12: ikony, gra z padem, Wi-Fi, dotyk).
 WERSJA=v1.20.0
 
 export DEBIAN_FRONTEND=noninteractive
@@ -137,6 +138,7 @@ install -d /root/.config/retroarch
 install -m 0644 "${SRC}/retroarch.cfg" /root/.config/retroarch/retroarch.cfg
 install -m 0644 "${SRC}/retroarch-konsola.service" /etc/systemd/system/retroarch-konsola.service
 install -m 0755 "${SRC}/konsola-listy" /usr/local/bin/konsola-listy
+install -m 0755 "${SRC}/konsola-reset-dotyku" /usr/local/bin/konsola-reset-dotyku
 # CO: gry startowe (opcja --gry), do /home/roms kopiuje je konsola-listy przy pierwszym starcie.
 if [[ -d "${SRC}/gry" ]]; then
 	mkdir -p /usr/local/share/konsola

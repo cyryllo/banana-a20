@@ -26,6 +26,9 @@ Environment=HOME=/root
 # ConditionPathExists, wiec przy pierwszym starcie zatrzymywal getty z kreatorem
 # Armbiana, choc RetroArch sie nie uruchamial (czarny ekran po graphical.target).
 ExecStartPre=-/bin/systemctl stop getty@tty1.service
+# CO: reset ukladu dotyku (swieza kalibracja, opis w skrypcie); minus = bez
+# ekranu z dotykiem albo przy bledzie RetroArch i tak startuje.
+ExecStartPre=-/usr/local/bin/konsola-reset-dotyku
 # CO: listy gier z /home/roms przed kazdym startem (ikony konsol w menu).
 ExecStartPre=/usr/local/bin/konsola-listy
 ExecStart=/usr/local/bin/retroarch

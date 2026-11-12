@@ -1,0 +1,23 @@
+#!/bin/sh
+# CO: reset ukladu dotyku ekranu LeMaker (FT5x06) przed startem RetroArch:
+# odpiecie i ponowne podpiecie sterownika edt_ft5x06. Przy podpieciu sterownik
+# daje impuls na linii RESET (PH7), a uklad kalibruje sie od nowa.
+# DLACZEGO: po kilku godzinach pracy uklad potrafi sie rozkalibrowac i przy
+# jednym palcu zglasza wiele falszywych punktow (zmierzone 2026-11-12: ok. 30
+# punktow na stukniecie zamiast 1-3), co w koncu blokuje dotyk w menu RetroArch.
+# Po resecie znowu 1 stukniecie = 1 dotkniecie. Zasilanie dotyku nie gasnie
+# (vcc-supply w nakladce), wiec bez tego kalibracja bylaby tylko przy starcie.
+# Bez ekranu z dotykiem skrypt nic nie robi.
+D=/sys/bus/i2c/drivers/edt_ft5x06
+for u in "${D}"/*-0038; do
+	[ -e "${u}" ] || continue
+	n=$(basename "${u}")
+	echo "${n}" > "${D}/unbind"
+	sleep 0.5
+	echo "${n}" > "${D}/bind"
+done
+# DLACZEGO czekamy: RetroArch szuka urzadzen wejscia przy starcie, a po
+# podpieciu sterownika urzadzenie /dev/input/eventN pojawia sie po chwili
+# (reset 300 ms + ponowione rozpoznanie ukladu).
+sleep 1
+exit 0
