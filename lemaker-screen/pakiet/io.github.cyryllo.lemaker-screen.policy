@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>banana-a20</vendor>
+  <vendor_url>https://github.com/cyryllo/banana-a20</vendor_url>
+  <action id="io.github.cyryllo.lemaker-screen">
+    <description>Change the LeMaker LCD settings</description>
+    <description xml:lang="pl">Zmiana ustawień ekranu LCD LeMaker</description>
+    <message>Authentication is required to change the screen settings</message>
+    <message xml:lang="pl">Zmiana ustawień ekranu wymaga hasła administratora</message>
+    <icon_name>lemaker-screen</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/lemaker-screen</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
+  </action>
+</policyconfig>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>LeMaker screen</title>
+  <rect x="4" y="8" width="56" height="38" rx="4" fill="#263238"/>
+  <rect x="8" y="12" width="48" height="30" rx="2" fill="#4fc3f7"/>
+  <circle cx="32" cy="27" r="7" fill="#fff59d"/>
+  <g stroke="#fff59d" stroke-width="2.4" stroke-linecap="round">
+    <line x1="32" y1="14.5" x2="32" y2="17"/><line x1="32" y1="37" x2="32" y2="39.5"/>
+    <line x1="19.5" y1="27" x2="22" y2="27"/><line x1="42" y1="27" x2="44.5" y2="27"/>
+  </g>
+  <rect x="28" y="46" width="8" height="7" fill="#263238"/>
+  <rect x="18" y="53" width="28" height="4" rx="2" fill="#263238"/>
+</svg>

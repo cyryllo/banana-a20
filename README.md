@@ -70,6 +70,8 @@ overlays=lemaker-lcd7
 
 Use only one `lemaker-lcd...` value at a time. Other overlays can stay on the same line, separated by spaces. To turn the LCD off, remove the `lemaker-lcd...` value. `sudo armbian-config` can switch overlays too.
 
+**Easier:** the [`lemaker-screen`](lemaker-screen/README.md) tool does this for you, in a window (menu → Settings → LeMaker screen) or with commands (`sudo lemaker-screen set 7`). It also sets the brightness, the HDMI mode for LCD + HDMI and resets the touch controller.
+
 `/boot` is on the Linux (ext4) partition, so it cannot be edited from Windows: boot once with an HDMI monitor or log in over SSH to switch the panel.
 
 ### LCD and HDMI at the same time
@@ -126,6 +128,8 @@ More: [gpio/README.md](gpio/README.md).
 | [`armbian-build/`](armbian-build/README.md) | scripts to build the images yourself |
 | [`arkada20/`](arkada20/README.md) | the Arkada20 game console |
 | [`bosman20/`](bosman20/README.md) | the Bosman20 3D printer host |
+| [`testy/`](testy/README.md) | checklist and script for testing Armbian images on the Banana Pi Pro before a release |
+| [`lemaker-screen/`](lemaker-screen/README.md) | tool (window and commands, `.deb`) to choose the LeMaker panel, brightness and touch reset |
 | [`gpio/`](gpio/README.md) | GPIO libraries, pinout, examples |
 | `stare jądro sunxi 3.4/` | original LeMaker `fex`/`bin` files for the old 3.4 kernel, kept as the source of the panel parameters |
 

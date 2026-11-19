@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=LeMaker screen
+GenericName=LCD screen settings
+Comment=Choose the LeMaker LCD panel, brightness and touch on the Banana Pi / Banana Pro
+Exec=lemaker-screen-gui
+Icon=lemaker-screen
+Categories=Settings;HardwareSettings;
+Keywords=LCD;display;screen;brightness;touch;LeMaker;Banana;
+StartupNotify=true

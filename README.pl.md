@@ -70,6 +70,8 @@ overlays=lemaker-lcd7
 
 Używaj tylko jednej wartości `lemaker-lcd...` naraz. Inne nakładki mogą zostać w tej samej linii, oddzielone spacjami. Żeby wyłączyć LCD, usuń wartość `lemaker-lcd...`. Nakładki można też przełączać w `sudo armbian-config`.
 
+**Prościej:** narzędzie [`lemaker-screen`](lemaker-screen/README.pl.md) robi to za Ciebie, w okienku (menu → Ustawienia → LeMaker screen) albo poleceniem (`sudo lemaker-screen set 7`). Ustawia też jasność i tryb HDMI przy LCD + HDMI oraz resetuje dotyk.
+
 `/boot` jest na partycji linuksowej (ext4), więc nie da się go edytować z Windowsa: uruchom płytkę raz z monitorem HDMI albo zaloguj się przez SSH, żeby zmienić ekran.
 
 ### LCD i HDMI jednocześnie
@@ -126,6 +128,8 @@ Więcej: [gpio/README.pl.md](gpio/README.pl.md).
 | [`armbian-build/`](armbian-build/README.pl.md) | skrypty do samodzielnego budowania obrazów |
 | [`arkada20/`](arkada20/README.pl.md) | konsola do gier Arkada20 |
 | [`bosman20/`](bosman20/README.pl.md) | host drukarki 3D Bosman20 |
+| [`testy/`](testy/README.pl.md) | lista kontrolna i skrypt do testów obrazów Armbiana na Banana Pi Pro przed wydaniem |
+| [`lemaker-screen/`](lemaker-screen/README.pl.md) | narzędzie (okienko i polecenia, `.deb`) do wyboru ekranu LeMaker, jasności i resetu dotyku |
 | [`gpio/`](gpio/README.pl.md) | biblioteki GPIO, grafika pinów, przykłady |
 | `stare jądro sunxi 3.4/` | oryginalne pliki `fex`/`bin` LeMakera dla starego jądra 3.4, zostawione jako źródło parametrów ekranów |
 
