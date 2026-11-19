@@ -12,13 +12,16 @@ Proste narzędzie do ustawiania ekranów LCD LeMakera na Banana Pi i Banana Pro 
 
 Dwie wersje: **okienko** (menu → Ustawienia → **LeMaker screen**) i **polecenia w konsoli** (`lemaker-screen`), także na obrazie bez pulpitu i przez SSH. Domyślnie po angielsku; po polsku z opcją `--lang=pl` albo zmienną `LEMAKER_SCREEN_LANG=pl` (np. `lemaker-screen-gui --lang=pl`).
 
+![Okno Ekran LeMaker](zrzuty/okno-pl.png)
+
 Narzędzie korzysta z nakładek, które są w oficjalnym Armbianie od listopada 2026 (`lemaker-lcd5`, `lemaker-lcd7`, `lemaker-lcd7-hdmi`). Na starszym Armbianie najpierw zaktualizuj system: `sudo apt update && sudo apt full-upgrade`. Ekranu 3,5" nie ma na liście, bo nie ma go w Armbianie (ręcznie: [overlays/README.pl.md](../overlays/README.pl.md)).
 
 ## Instalacja
 
-Na płytce:
+Na płytce pobierz pakiet ([dist/lemaker-screen_1.0.0_all.deb](dist/lemaker-screen_1.0.0_all.deb)) i zainstaluj go:
 
 ```bash
+wget https://github.com/cyryllo/banana-a20/raw/master/lemaker-screen/dist/lemaker-screen_1.0.0_all.deb
 sudo apt install ./lemaker-screen_1.0.0_all.deb
 ```
 

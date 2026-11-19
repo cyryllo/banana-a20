@@ -12,13 +12,16 @@ A simple tool to set up the LeMaker LCD panels on the Banana Pi and Banana Pro w
 
 Two front ends: a **window** (menu → Settings → **LeMaker screen**) and **commands** (`lemaker-screen`), also on images without a desktop and over SSH. In English; Polish with `--lang=pl` or `LEMAKER_SCREEN_LANG=pl`.
 
+![LeMaker screen window](zrzuty/okno-en.png)
+
 The tool uses the overlays that are in official Armbian since November 2026 (`lemaker-lcd5`, `lemaker-lcd7`, `lemaker-lcd7-hdmi`). On an older Armbian, update the system first: `sudo apt update && sudo apt full-upgrade`. The 3.5" panel is not on the list because it is not in Armbian (by hand: [overlays/README.md](../overlays/README.md)).
 
 ## Installation
 
-On the board:
+On the board, download the package ([dist/lemaker-screen_1.0.0_all.deb](dist/lemaker-screen_1.0.0_all.deb)) and install it:
 
 ```bash
+wget https://github.com/cyryllo/banana-a20/raw/master/lemaker-screen/dist/lemaker-screen_1.0.0_all.deb
 sudo apt install ./lemaker-screen_1.0.0_all.deb
 ```
 
