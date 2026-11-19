@@ -35,11 +35,12 @@ Na jądrze mainline ekrany były czarne: jądro nie czyta pliku `script.bin`. Us
 - **LCD migał przy podłączonym monitorze HDMI:** LCD i HDMI korzystają z jednego zegara; częstotliwości ekranów dobrano tak, żeby oba mogły z niego działać jednocześnie,
 - **ekran 7" wymaga trybu LVDS,** który jądro włącza tylko dla ekranu opisanego jako `panel-lvds`.
 
-Ta praca jest teraz częścią **oficjalnego Armbiana** (wszystkie trzy zmiany przyjęte w listopadzie 2026):
+Ta praca jest teraz częścią **oficjalnego Armbiana** (wszystkie zmiany przyjęte w listopadzie 2026):
 
 - [armbian/build#11293](https://github.com/armbian/build/pull/11293): sterownik dotyku `edt-ft5x06` włączony w jądrze,
 - [armbian/build#11294](https://github.com/armbian/build/pull/11294): poprawka ponawiająca rozpoznanie dotyku,
-- [armbian/build#11296](https://github.com/armbian/build/pull/11296): nakładki `lemaker-lcd5`, `lemaker-lcd7` i `lemaker-lcd7-hdmi`.
+- [armbian/build#11296](https://github.com/armbian/build/pull/11296): nakładki `lemaker-lcd5`, `lemaker-lcd7` i `lemaker-lcd7-hdmi`,
+- [armbian/build#11337](https://github.com/armbian/build/pull/11337): dotyk budzi wygaszony ekran (układ dotyku nie traci zasilania).
 
 Szczegóły techniczne (jak to działa, timingi, ręczna instalacja, zmiany w nakładce): [overlays/README.pl.md](overlays/README.pl.md).
 

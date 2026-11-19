@@ -35,11 +35,12 @@ On the mainline kernel the panels stayed black: the kernel does not read `script
 - **the LCD flickered with an HDMI monitor connected:** LCD and HDMI share one clock; the panel clocks were chosen so that both can run from it at the same time,
 - **the 7" panel needs LVDS mode,** which the kernel only enables for a panel described as `panel-lvds`.
 
-The work is now part of **official Armbian** (all three changes merged in November 2026):
+The work is now part of **official Armbian** (all changes merged in November 2026):
 
 - [armbian/build#11293](https://github.com/armbian/build/pull/11293): touch driver `edt-ft5x06` enabled in the kernel,
 - [armbian/build#11294](https://github.com/armbian/build/pull/11294): the touch retry patch,
-- [armbian/build#11296](https://github.com/armbian/build/pull/11296): overlays `lemaker-lcd5`, `lemaker-lcd7` and `lemaker-lcd7-hdmi`.
+- [armbian/build#11296](https://github.com/armbian/build/pull/11296): overlays `lemaker-lcd5`, `lemaker-lcd7` and `lemaker-lcd7-hdmi`,
+- [armbian/build#11337](https://github.com/armbian/build/pull/11337): touch wakes the blanked screen (the touch controller keeps its power).
 
 Technical details (how it works, timings, manual installation, changing an overlay): [overlays/README.md](overlays/README.md).
 

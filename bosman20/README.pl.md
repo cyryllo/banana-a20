@@ -58,7 +58,7 @@ Mainsail i Moonraker nie mają hasła. Każdy w Twojej sieci lokalnej może ster
 
 ## Znane problemy
 
-- **Budzenie dotykiem w innych obrazach Armbiana.** Układ dotyku ma wspólne zasilanie z panelem. Bosman20 ma poprawkę nakładki (`vcc-supply` w węźle dotyku), która trzyma je włączone przy wygaszonym ekranie; dopóki nie zostanie przyjęta do Armbiana, inne obrazy Armbiana nie budzą ekranu dotykiem.
+- **Budzenie dotykiem w innych obrazach Armbiana.** Układ dotyku ma wspólne zasilanie z panelem. Poprawka nakładki, która trzyma je włączone przy wygaszonym ekranie (`vcc-supply` w węźle dotyku), jest w Bosman20 i została przyjęta do Armbiana jako [armbian/build#11337](https://github.com/armbian/build/pull/11337); obrazy Armbiana zbudowane wcześniej nie budzą ekranu dotykiem.
 - **Aktualizacje jądra:** dopóki nie wyjdzie oficjalne jądro Armbiana ze zmianami dla LeMakera, `apt upgrade` może zainstalować jądro bez obsługi ekranu. Zostaw jądro z obrazu: `sudo apt-mark hold linux-image-current-sunxi linux-dtb-current-sunxi`.
 
 ## Budowanie obrazu

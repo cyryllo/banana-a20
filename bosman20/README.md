@@ -58,7 +58,7 @@ Mainsail and Moonraker have no password. Anyone in your local network can contro
 
 ## Known issues
 
-- **Touch wake on other Armbian images.** The touch controller shares the panel supply. Bosman20 has the overlay fix (`vcc-supply` in the touch node) that keeps it powered while the screen is off; until it is merged in Armbian, other Armbian images do not wake the screen on touch.
+- **Touch wake on other Armbian images.** The touch controller shares the panel supply. The overlay fix that keeps it powered while the screen is off (`vcc-supply` in the touch node) is in Bosman20 and was merged in Armbian as [armbian/build#11337](https://github.com/armbian/build/pull/11337); Armbian images built before that do not wake the screen on touch.
 - **Kernel updates**: until an official Armbian kernel with the LeMaker changes is out, `apt upgrade` may install a kernel without the panel support. Keep the kernel: `sudo apt-mark hold linux-image-current-sunxi linux-dtb-current-sunxi`.
 
 ## Building the image
