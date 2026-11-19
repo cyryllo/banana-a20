@@ -18,14 +18,14 @@ The tool uses the overlays that are in official Armbian since November 2026 (`le
 
 ## Installation
 
-On the board, download the package ([dist/lemaker-screen_1.0.0_all.deb](dist/lemaker-screen_1.0.0_all.deb)) and install it:
+On the board, download the package ([dist/lemaker-screen_1.0.1_all.deb](dist/lemaker-screen_1.0.1_all.deb)) and install it:
 
 ```bash
-wget https://github.com/cyryllo/banana-a20/raw/master/lemaker-screen/dist/lemaker-screen_1.0.0_all.deb
-sudo apt install ./lemaker-screen_1.0.0_all.deb
+wget https://github.com/cyryllo/banana-a20/raw/master/lemaker-screen/dist/lemaker-screen_1.0.1_all.deb
+sudo apt install --install-recommends ./lemaker-screen_1.0.1_all.deb
 ```
 
-The window needs `python3-gi`, `gir1.2-gtk-3.0` and `pkexec`, which the XFCE desktop image already has (`apt` installs what is missing). Without a desktop only the commands are used.
+`--install-recommends` also installs what the window needs (`python3-gi`, `gir1.2-gtk-3.0`, `pkexec`); Armbian skips recommended packages by default. Without a desktop only the commands are used, and you can leave out `--install-recommends`.
 
 ## Window
 
@@ -66,7 +66,7 @@ lemaker-screen --help                 # help
 - It removes old `user_overlays=bananapro-lemaker-lcd...` from images made before November 2026, because two screen overlays at once break the boot.
 - With 5" and 7"-HDMI it adds `video=HDMI-A-1:1920x1080@60` to `extraargs=`, because the LCD and HDMI share one clock and without it the LCD flickers.
 - Before every change it makes a backup: `/boot/armbianEnv.txt.lemaker-screen.bak`.
-- Brightness is changed through logind (no password, in the session on the board) or directly as root. The value comes back after a reboot.
+- Brightness is changed through logind (no password, in the active session on the board's screen) or directly as root. Over SSH use `sudo lemaker-screen brightness N`. The value comes back after a reboot.
 - Touch reset unbinds and binds the `edt_ft5x06` driver, which sends a RESET pulse to the controller.
 
 ## Building the package

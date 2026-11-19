@@ -21,7 +21,7 @@ import shutil
 import subprocess
 import sys
 
-WERSJA = "1.0.0"
+WERSJA = "1.0.1"
 NAZWA = "lemaker-screen"
 
 # CO: katalog glowny systemu; zmienny tylko do testow (LEMAKER_SCREEN_ROOT).
@@ -77,6 +77,8 @@ TEKSTY = {
     "bad_value": ("Wrong value: {}", "Zła wartość: {}"),
     "unknown_cmd": ("Unknown command: {}", "Nieznane polecenie: {}"),
     "brightness_set": ("Brightness: {}%", "Jasność: {}%"),
+    "brightness_sudo": ("Without a password brightness changes only in the session on the board's screen. Here (e.g. over SSH) use: sudo lemaker-screen brightness {}",
+                        "Bez hasła jasność zmienia się tylko w sesji na ekranie płytki. Tutaj (np. przez SSH) użyj: sudo lemaker-screen brightness {}"),
     "no_env": ("No {} found, is this Armbian?", "Brak {}, czy to Armbian?"),
 }
 
@@ -113,7 +115,18 @@ def ekran_ustawiony(linie=None):
     for klucz, (nakladka, _) in EKRANY.items():
         if nakladka and nakladka in wartosc(linie, "overlays"):
             return klucz
+    # DLACZEGO tez user_overlays: starsze obrazy banana-a20 i reczne nakladki
+    # (np. bananapro-lemaker-lcd7, lemaker-lcd7-vcc) wlaczaja ekran tam.
+    for n in wartosc(linie, "user_overlays"):
+        for wzor, klucz in (("lcd7-hdmi", "7-hdmi"), ("lcd7", "7"), ("lcd5", "5")):
+            if czy_nakladka_ekranu(n) and wzor in n:
+                return klucz
     return "off"
+
+
+def czy_nakladka_ekranu(nazwa):
+    """CO: czy nakladka uzytkownika to ekran LeMaker (dowolny wariant nazwy)."""
+    return "lemaker-lcd" in nazwa
 
 
 def dt(sciezka):
@@ -229,9 +242,10 @@ def zapisz_env(linie, stare):
 
 def ustaw_ekran(klucz, wymus=False):
     """CO: wybiera ekran w /boot/armbianEnv.txt. Zwraca sciezke kopii albo None.
-    DLACZEGO usuwamy tez stare user_overlays bananapro-lemaker-lcd*: obrazy z
-    repozytorium banana-a20 sprzed 2026-11 wlaczaly ekran w ten sposob, a dwie
-    nakladki ekranu naraz psuja start (wspolny TCON0, piny, adres dotyku)."""
+    DLACZEGO usuwamy tez user_overlays z "lemaker-lcd" w nazwie: obrazy z
+    repozytorium banana-a20 sprzed 2026-11 (bananapro-lemaker-lcd*) i reczne
+    nakladki wlaczaly ekran w ten sposob, a dwie nakladki ekranu naraz psuja
+    start (wspolny TCON0, piny, adres dotyku)."""
     if klucz not in EKRANY:
         raise Blad(t("bad_value", klucz))
     wymagaj_roota()
@@ -245,7 +259,7 @@ def ustaw_ekran(klucz, wymus=False):
     if EKRANY[klucz][0]:
         nakladki.append(EKRANY[klucz][0])
     linie = ustaw_klucz(linie, "overlays", nakladki)
-    uzytkownika = [n for n in wartosc(linie, "user_overlays") if not n.startswith("bananapro-lemaker-lcd")]
+    uzytkownika = [n for n in wartosc(linie, "user_overlays") if not czy_nakladka_ekranu(n)]
     linie = ustaw_klucz(linie, "user_overlays", uzytkownika)
     if klucz in Z_HDMI_1080P:
         linie = ustaw_hdmi_1080p(linie, True)
@@ -279,10 +293,14 @@ def ustaw_jasnosc(procent):
         with open(os.path.join(d, "brightness"), "w") as f:
             f.write(str(wartosc_bl))
     else:
-        subprocess.run(["busctl", "call", "org.freedesktop.login1",
-                        "/org/freedesktop/login1/session/auto", "org.freedesktop.login1.Session",
-                        "SetBrightness", "ssu", "backlight", os.path.basename(d), str(wartosc_bl)],
-                       check=True, capture_output=True)
+        # DLACZEGO osobny komunikat: logind odmawia sesjom bez stanowiska (SSH)
+        # tekstem "Your session has no seat", niezrozumialym dla uzytkownika.
+        p = subprocess.run(["busctl", "call", "org.freedesktop.login1",
+                            "/org/freedesktop/login1/session/auto", "org.freedesktop.login1.Session",
+                            "SetBrightness", "ssu", "backlight", os.path.basename(d), str(wartosc_bl)],
+                           capture_output=True, text=True)
+        if p.returncode != 0:
+            raise Blad(t("brightness_sudo", procent))
     return procent
 
 

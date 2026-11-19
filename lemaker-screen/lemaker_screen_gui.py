@@ -52,6 +52,8 @@ T = {
     "no_overlays": ("This Armbian has no LeMaker overlays yet. Update the system (sudo apt update && sudo apt full-upgrade).",
                     "Ten Armbian nie ma jeszcze nakładek LeMaker. Zaktualizuj system (sudo apt update && sudo apt full-upgrade)."),
     "close": ("Close", "Zamknij"),
+    "no_auth": ("Could not get administrator rights (no password window in this desktop?). In a terminal use: sudo lemaker-screen",
+                "Nie udało się uzyskać uprawnień administratora (brak okienka hasła w tym pulpicie?). W terminalu użyj: sudo lemaker-screen"),
 }
 
 
@@ -66,10 +68,15 @@ def polecenie_root(*arg):
     if not os.path.exists(cli):   # uruchomione z katalogu zrodel
         cli = os.path.join(os.path.dirname(os.path.realpath(__file__)), "lemaker_screen.py")
     p = subprocess.run(["pkexec", cli, *arg, f"--lang={ls.JEZYK}"], capture_output=True, text=True)
-    # 126/127 = uzytkownik anulowal okno hasla
-    if p.returncode in (126, 127):
+    # 126 = uzytkownik anulowal okno hasla.
+    # DLACZEGO 127 nie jest anulowaniem: pkexec zwraca 127 takze, gdy nie ma
+    # agenta polkit (okienka z haslem); bez komunikatu przycisk "nic nie robi".
+    if p.returncode == 126:
         return False, None
-    return p.returncode == 0, (p.stdout + p.stderr).strip()
+    tekst = (p.stdout + p.stderr).strip()
+    if p.returncode == 127 and not tekst:
+        tekst = tr("no_auth")
+    return p.returncode == 0, tekst
 
 
 class Okno(Gtk.Window):

@@ -18,14 +18,14 @@ Narzędzie korzysta z nakładek, które są w oficjalnym Armbianie od listopada 
 
 ## Instalacja
 
-Na płytce pobierz pakiet ([dist/lemaker-screen_1.0.0_all.deb](dist/lemaker-screen_1.0.0_all.deb)) i zainstaluj go:
+Na płytce pobierz pakiet ([dist/lemaker-screen_1.0.1_all.deb](dist/lemaker-screen_1.0.1_all.deb)) i zainstaluj go:
 
 ```bash
-wget https://github.com/cyryllo/banana-a20/raw/master/lemaker-screen/dist/lemaker-screen_1.0.0_all.deb
-sudo apt install ./lemaker-screen_1.0.0_all.deb
+wget https://github.com/cyryllo/banana-a20/raw/master/lemaker-screen/dist/lemaker-screen_1.0.1_all.deb
+sudo apt install --install-recommends ./lemaker-screen_1.0.1_all.deb
 ```
 
-Do okienka potrzebne są pakiety `python3-gi`, `gir1.2-gtk-3.0` i `pkexec`, które obraz z pulpitem XFCE już ma (`apt` doinstaluje brakujące). Na obrazie bez pulpitu działają same polecenia.
+`--install-recommends` doinstaluje też to, czego potrzebuje okienko (`python3-gi`, `gir1.2-gtk-3.0`, `pkexec`); Armbian domyślnie pomija pakiety zalecane. Na obrazie bez pulpitu działają same polecenia i `--install-recommends` można pominąć.
 
 ## Okienko
 
@@ -66,7 +66,7 @@ lemaker-screen --help                 # pomoc
 - Usuwa stare `user_overlays=bananapro-lemaker-lcd...` z obrazów sprzed listopada 2026, bo dwie nakładki ekranu naraz psują start.
 - Przy 5" i 7" z HDMI dopisuje `video=HDMI-A-1:1920x1080@60` w `extraargs=`, bo LCD i HDMI korzystają z tego samego zegara i bez tego LCD miga.
 - Przed każdą zmianą robi kopię: `/boot/armbianEnv.txt.lemaker-screen.bak`.
-- Jasność zmienia przez logind (bez hasła, w sesji na płytce) albo bezpośrednio jako root. Wartość wraca po restarcie.
+- Jasność zmienia przez logind (bez hasła, w aktywnej sesji na ekranie płytki) albo bezpośrednio jako root. Przez SSH użyj `sudo lemaker-screen brightness N`. Wartość wraca po restarcie.
 - Reset dotyku odpina i podpina sterownik `edt_ft5x06`, a układ dostaje wtedy impuls RESET.
 
 ## Budowanie pakietu
