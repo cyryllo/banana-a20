@@ -252,7 +252,7 @@ sudo ./build
 gpio -v          # "Banana Pro Details: Type: Banana Pro, Revision: 1.2, Memory: 1024MB, Maker: LeMaker"
 ```
 
-`./build` kompiluje i instaluje bibliotekę w `/usr/local/lib`, nagłówki w `/usr/local/include` i polecenie `gpio` w `/usr/local/bin`. Usuwanie: `sudo rm /usr/local/lib/libwiringPi* /usr/local/lib/libwiringPiDev* /usr/local/bin/gpio && sudo ldconfig`.
+`./build` kompiluje i instaluje bibliotekę w `/usr/local/lib`, nagłówki w `/usr/local/include` i polecenie `gpio` w `/usr/local/bin`. Usuwanie (razem z nagłówkami): `sudo ./build uninstall` w `gpio/WiringBP`.
 
 ### Polecenie gpio
 
