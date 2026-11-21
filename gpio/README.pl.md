@@ -19,6 +19,7 @@ WiringBP i LMK.GPIO napisał LeMaker dla starego jądra sunxi 3.4 i nie były ak
 - [Numery pinów](#numery-pinów)
 - [Bezpieczeństwo](#bezpieczeństwo)
 - [Którego narzędzia użyć](#którego-narzędzia-użyć)
+- [Pakiety (.deb)](#pakiety-deb)
 - [Układ do przykładów](#układ-do-przykładów)
 - [1. libgpiod: standardowy sposób Linuksa](#1-libgpiod-standardowy-sposób-linuksa)
 - [2. WiringBP: biblioteka C i polecenie gpio](#2-wiringbp-biblioteka-c-i-polecenie-gpio)
@@ -111,7 +112,7 @@ Numer GPIO jądra wylicza się z pinu SoC: **bank × 32 + pin**, gdzie PA = 0, P
 | | libgpiod | WiringBP | LMK.GPIO | lg (lgpio) |
 |---|---|---|---|---|
 | Język | powłoka, C, Python, C++ | C, powłoka (`gpio`) | Python 3 | C, Python, powłoka (`rgs`) |
-| Instalacja | `apt install` | kompilacja z tego repozytorium | kompilacja z tego repozytorium | kompilacja z tego repozytorium |
+| Instalacja | `apt install` | [pakiet](#pakiety-deb) `wiringbp` albo kompilacja | [pakiet](#pakiety-deb) `python3-lmk-gpio` albo kompilacja | [pakiety](#pakiety-deb) `lgpio`, `python3-lgpio` albo kompilacja |
 | Numery pinów | GPIO jądra (275) | wPi, BCM albo fizyczne | fizyczne albo BCM | GPIO jądra (275) |
 | Podciąganie do 3,3 V / do masy | tak | tak | tak | tak |
 | Przerwania (zbocza) | tak | tak (`wiringPiISR`) | tak (`add_event_detect`) | tak (powiadomienia, czas w ns) |
@@ -125,6 +126,34 @@ Numer GPIO jądra wylicza się z pinu SoC: **bank × 32 + pin**, gdzie PA = 0, P
 - Gotowe programy z Raspberry Pi: **LMK.GPIO** dla Pythona (zmiana importu), **WiringBP** dla C, **lg** dla programów pisanych pod lgpio albo pigpio.
 - Serwa, PWM na wielu pinach, sterowanie z innego komputera: **lg**.
 - Podgląd pinów: **`gpio readall`**.
+
+## Pakiety (.deb)
+
+Gotowe pakiety dla **Debiana 13 (trixie) armhf**, czyli obecnego Armbiana dla Banana Pro. Zawierają poprawione wersje z tego repozytorium.
+
+| Pakiet | Zawartość |
+|---|---|
+| [wiringbp_2.0-1_armhf.deb](pakiety/dist/wiringbp_2.0-1_armhf.deb) | WiringBP: biblioteki, nagłówki, polecenie `gpio` |
+| [python3-lmk-gpio_0.0.1-1_armhf.deb](pakiety/dist/python3-lmk-gpio_0.0.1-1_armhf.deb) | LMK.GPIO dla Pythona 3 |
+| [lgpio_0.2.2-1_armhf.deb](pakiety/dist/lgpio_0.2.2-1_armhf.deb) | lg: `liblgpio`, `librgpio`, nagłówki, `rgpiod`, `rgs` |
+| [python3-lgpio_0.2.2-1_armhf.deb](pakiety/dist/python3-lgpio_0.2.2-1_armhf.deb) | lg dla Pythona 3: `lgpio` i `rgpio` (wymaga `lgpio`) |
+
+Pobierz na płytce te, których potrzebujesz, i zainstaluj przez `apt` (doinstaluje też to, od czego zależą):
+
+```bash
+cd /tmp
+wget https://github.com/cyryllo/banana-a20/raw/master/gpio/pakiety/dist/wiringbp_2.0-1_armhf.deb
+wget https://github.com/cyryllo/banana-a20/raw/master/gpio/pakiety/dist/python3-lmk-gpio_0.0.1-1_armhf.deb
+wget https://github.com/cyryllo/banana-a20/raw/master/gpio/pakiety/dist/lgpio_0.2.2-1_armhf.deb
+wget https://github.com/cyryllo/banana-a20/raw/master/gpio/pakiety/dist/python3-lgpio_0.2.2-1_armhf.deb
+sudo apt install ./wiringbp_2.0-1_armhf.deb ./python3-lmk-gpio_0.0.1-1_armhf.deb ./lgpio_0.2.2-1_armhf.deb ./python3-lgpio_0.2.2-1_armhf.deb
+```
+
+Usuwanie: `sudo apt remove wiringbp python3-lmk-gpio lgpio python3-lgpio`.
+
+Jeśli wcześniej instalowałeś bibliotekę ze źródeł (`sudo ./build`, `sudo make install`, `sudo pip install`), najpierw usuń tamtą kopię (polecenia w sekcjach niżej). Pliki w `/usr/local` mają pierwszeństwo przed pakietem, więc dalej działałaby stara wersja.
+
+Pakiety buduje się na komputerze w kontenerze Debiana 13 armhf: [pakiety/zbuduj-deb.sh](pakiety/zbuduj-deb.sh) (wymaga Dockera i QEMU dla ARM, `sudo apt install qemu-user-static`).
 
 ## Układ do przykładów
 
@@ -195,6 +224,8 @@ Dokumentacja libgpiod: https://libgpiod.readthedocs.io/
 ## 2. WiringBP: biblioteka C i polecenie gpio
 
 ### Instalacja
+
+Najprościej: pakiet `wiringbp` ([Pakiety](#pakiety-deb)). Ze źródeł:
 
 ```bash
 sudo apt install git build-essential
@@ -289,6 +320,8 @@ Stare przykłady LeMakera i WiringPi są w [WiringBP/examples/](WiringBP/example
 
 ### Instalacja
 
+Najprościej: pakiet `python3-lmk-gpio` ([Pakiety](#pakiety-deb)). Ze źródeł:
+
 ```bash
 sudo apt install git build-essential python3-dev python3-setuptools python3-pip
 git clone https://github.com/cyryllo/banana-a20.git     # jeśli jeszcze nie
@@ -353,6 +386,8 @@ Ta sama osoba (joan2937) przygotowała następcę dla każdej płytki z Linuksem
 
 ### Instalacja
 
+Najprościej: pakiety `lgpio` i `python3-lgpio` ([Pakiety](#pakiety-deb)). Ze źródeł:
+
 ```bash
 sudo apt install git build-essential python3-dev python3-setuptools swig
 git clone https://github.com/cyryllo/banana-a20.git     # jeśli jeszcze nie
@@ -361,7 +396,9 @@ make
 sudo make install
 ```
 
-Instaluje `liblgpio`/`librgpio` w `/usr/local/lib`, nagłówki w `/usr/local/include`, `rgpiod` i `rgs` w `/usr/local/bin` oraz moduły Pythona `lgpio` i `rgpio` (kilka minut na płytce). Użyj tej kopii, nie oryginału: oryginał zgłasza piny powyżej 255 (bank PI, większość złącza) ze złym numerem, więc funkcje Pythona przypięte do tych pinów nigdy się nie wywołują.
+Kompilacja ze źródeł instaluje `liblgpio`/`librgpio` w `/usr/local/lib`, nagłówki w `/usr/local/include`, `rgpiod` i `rgs` w `/usr/local/bin` oraz moduły Pythona `lgpio` i `rgpio` (kilka minut na płytce). Użyj tej kopii, nie oryginału: oryginał zgłasza piny powyżej 255 (bank PI, większość złącza) ze złym numerem, więc funkcje Pythona przypięte do tych pinów nigdy się nie wywołują.
+
+Usuwanie kopii zbudowanej ze źródeł: `sudo make uninstall` w `gpio/lg`, potem moduły Pythona: `sudo rm -rf /usr/local/lib/python3*/dist-packages/{lgpio,rgpio,_lgpio}*` i `sudo ldconfig`.
 
 lgpio trzyma swoje kanały powiadomień (`.lgd-nfy*`) w **bieżącym katalogu** i przechodzi do niego: uruchamiaj programy z katalogu z prawem zapisu (nie z `/`) albo ustaw `LG_WD`, np. `sudo LG_WD=/tmp python3 program.py`.
 
@@ -465,7 +502,7 @@ sudo picocom -b 115200 /dev/ttyS1         # wyjście: Ctrl+A Ctrl+X
 |---|---|
 | `Unable to open /dev/mem` / `No access to /dev/mem. Try running as root!` | uruchom przez `sudo` |
 | `gpioset: ... Device or resource busy`, `Failed to add edge detection` | inny program trzyma pin. `wiringPiISR` i `gpio edge` z WiringBP zostawiają pin w `/sys/class/gpio` po zakończeniu: `sudo gpio unexportall` |
-| `gpio: command not found` | WiringBP nie jest zainstalowany (`sudo ./build`) albo `/usr/local/bin` nie ma w `PATH` dla `sudo` |
+| `gpio: command not found` | WiringBP nie jest zainstalowany (pakiet `wiringbp` albo `sudo ./build`) albo `/usr/local/bin` nie ma w `PATH` dla `sudo` |
 | `wiringPiISR: pin not sunpprt on bananaPi` | ten pin nie zgłasza przerwań, użyj pinu z żółtym numerem w tabeli pinów |
 | funkcja lgpio dla pinu się nie wywołuje | użyj lg z tego repozytorium (nie oryginału) i uruchamiaj program z katalogu z prawem zapisu albo z `LG_WD` |
 | ekran gaśnie | coś wyzerowało kanał PWM 0 (stary WiringBP, `param_pwm_pins=1`); przywrócenie: `echo 0 \| sudo tee /sys/class/backlight/*/brightness; echo 200 \| sudo tee /sys/class/backlight/*/brightness` |

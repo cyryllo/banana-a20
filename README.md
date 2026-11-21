@@ -118,7 +118,7 @@ More: [arkada20/README.md](arkada20/README.md).
 
 The 40-pin header of the Banana Pro, with the two LeMaker libraries working again on the current kernel: **WiringBP** (WiringPi for C, with `gpio readall`) and **LMK.GPIO** (RPi.GPIO for Python). pigpio cannot run on the A20, its successor **lg** (lgpio, rgpio) works instead: software PWM and servos on any pin, alerts, control over the network. Plus the standard Linux tools (libgpiod), a colour pinout and tested examples.
 
-More: [gpio/README.md](gpio/README.md).
+Ready packages for Debian 13 armhf: [gpio/README.md#packages-deb](gpio/README.md#packages-deb). More: [gpio/README.md](gpio/README.md).
 
 ## Repository contents
 

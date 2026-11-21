@@ -118,7 +118,7 @@ Więcej: [arkada20/README.pl.md](arkada20/README.pl.md).
 
 Złącze 40 pinów Banana Pro i dwie biblioteki LeMakera znowu działające na obecnym jądrze: **WiringBP** (WiringPi dla C, z `gpio readall`) i **LMK.GPIO** (RPi.GPIO dla Pythona). pigpio nie ruszy na A20, zamiast niego działa jego następca **lg** (lgpio, rgpio): programowy PWM i serwa na dowolnym pinie, powiadomienia o zmianach stanu, sterowanie przez sieć. Do tego standardowe narzędzia Linuksa (libgpiod), kolorowa grafika pinów i sprawdzone przykłady.
 
-Więcej: [gpio/README.pl.md](gpio/README.pl.md).
+Gotowe pakiety dla Debiana 13 armhf: [gpio/README.pl.md#pakiety-deb](gpio/README.pl.md#pakiety-deb). Więcej: [gpio/README.pl.md](gpio/README.pl.md).
 
 ## Zawartość repozytorium
 
