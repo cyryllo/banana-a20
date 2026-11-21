@@ -10,6 +10,7 @@ Everything to use the 40-pin header of the **LeMaker Banana Pro** (Allwinner A20
 - [LMK.GPIO](#3-lmkgpio-python-rpigpio-api): the RPi.GPIO port for the Banana Pro (Python)
 - [lg (lgpio, rgpio)](#4-lg-lgpio-and-rgpio-instead-of-pigpio): the successor of pigpio by the same author, for any Linux board: software PWM and servos on any pin, alerts, remote control over the network
 - [example programs](examples/) for all of them, and how to enable [I2C, SPI, UART and PWM](#i2c-spi-uart-and-hardware-pwm)
+- the LeMaker expansion boards [LN Digital, LN HUB-32IO and LN IO](moduly/README.md): pins, jumpers and examples
 
 WiringBP and LMK.GPIO were written by LeMaker for the old sunxi 3.4 kernel and had not been updated since 2016-2019. The versions here are fixed for the mainline kernel and Python 3.13 (see [Changes](#changes-against-the-original-versions)). lg needed one fix for the A20 (GPIO numbers above 255). Everything on this page was tested on a Banana Pro with Armbian 6.18.62 (November 2026).
 
@@ -28,6 +29,7 @@ WiringBP and LMK.GPIO were written by LeMaker for the old sunxi 3.4 kernel and h
 - [I2C, SPI, UART and hardware PWM](#i2c-spi-uart-and-hardware-pwm)
 - [Troubleshooting](#troubleshooting)
 - [Changes against the original versions](#changes-against-the-original-versions)
+- [LeMaker expansion boards](moduly/README.md) (separate page)
 - [Licenses](#licenses)
 
 ## Pinout

@@ -10,6 +10,7 @@ Wszystko, czego potrzeba do korzystania ze złącza 40 pinów **LeMaker Banana P
 - [LMK.GPIO](#3-lmkgpio-python-api-rpigpio): RPi.GPIO przerobione dla Banana Pro (Python)
 - [lg (lgpio, rgpio)](#4-lg-lgpio-i-rgpio-zamiast-pigpio): następca pigpio z tego samego źródła (joan2937), dla każdej płytki z Linuksem: programowy PWM i serwa na dowolnym pinie, powiadomienia o zmianach stanu, sterowanie przez sieć
 - [przykładowe programy](examples/) dla nich wszystkich i opis włączania [I2C, SPI, UART i PWM](#i2c-spi-uart-i-sprzętowy-pwm)
+- płytki rozszerzeń LeMakera [LN Digital, LN HUB-32IO i LN IO](moduly/README.pl.md): piny, zworki i przykłady
 
 WiringBP i LMK.GPIO napisał LeMaker dla starego jądra sunxi 3.4 i nie były aktualizowane od lat 2016-2019. Wersje w tym repozytorium są poprawione pod jądro mainline i Pythona 3.13 (zobacz [Zmiany](#zmiany-względem-oryginalnych-wersji)). lg wymagał jednej poprawki dla A20 (numery GPIO powyżej 255). Wszystko na tej stronie sprawdziłem na Banana Pro z Armbianem 6.18.62 (listopad 2026).
 
@@ -28,6 +29,7 @@ WiringBP i LMK.GPIO napisał LeMaker dla starego jądra sunxi 3.4 i nie były ak
 - [I2C, SPI, UART i sprzętowy PWM](#i2c-spi-uart-i-sprzętowy-pwm)
 - [Rozwiązywanie problemów](#rozwiązywanie-problemów)
 - [Zmiany względem oryginalnych wersji](#zmiany-względem-oryginalnych-wersji)
+- [Płytki rozszerzeń LeMakera](moduly/README.pl.md) (osobna strona)
 - [Licencje](#licencje)
 
 ## Piny
