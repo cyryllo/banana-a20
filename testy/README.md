@@ -36,10 +36,11 @@ Installs the tools (`gpiod`, `i2c-tools`, `alsa-utils`, `iw`) and adds the `pwm`
 sudo ./test-bananapipro.sh                     # all modules, with questions
 sudo ./test-bananapipro.sh --tylko sata,gpio   # chosen modules
 sudo ./test-bananapipro.sh --bez-pytan         # automatic checks only
+sudo ./test-bananapipro.sh --minimalny         # Armbian release checklist, no interaction
 sudo ./test-bananapipro.sh --lista             # list of modules
 ```
 
-**Window** (desktop images): `python3 ~/testy/test-bananapipro-gui.py`, or copy `test-bananapipro.desktop` to `~/.local/share/applications/` (change `Exec=` to the full path). Tick the modules, **Start testu**, give the password, then answer with the big buttons (made for the touch screen). At the end: **Otwórz raport** / **Kopiuj raport**.
+**Window** (desktop images): `python3 ~/testy/test-bananapipro-gui.py`, or copy `test-bananapipro.desktop` to `~/.local/share/applications/` (change `Exec=` to the full path). Tick the modules (**Wymagane (Armbian)** ticks only the release checklist and turns on "no questions"), **Start testu**, give the password, then answer with the big buttons (made for the touch screen). At the end: **Otwórz raport** / **Kopiuj raport**.
 
 Start the window **from the desktop**, not over SSH: the password window (polkit) belongs to the desktop session. Without a keyboard, use the on-screen keyboard `onboard` (`sudo apt install onboard at-spi2-core`, then in its settings turn on the floating icon).
 
@@ -50,6 +51,7 @@ Start the window **from the desktop**, not over SSH: the password window (polkit
 | (none) | all modules, with questions |
 | `--tylko a,b` | only the given modules |
 | `--bez-pytan` | automatic checks only, e.g. over SSH without a screen |
+| `--minimalny` | the Armbian release checklist, no interaction: system, SD, SATA, USB, Ethernet, Wi-Fi, network, HDMI, sound cards, load, packages (LCD panels and GPIO are tested separately) |
 | `--przygotuj` | tools and overlays for the GPIO tests |
 | `--ekrany` | LeMaker panels one after another (see below) |
 | `--aktualizacja` | first `apt update` and `apt full-upgrade`, then the test |

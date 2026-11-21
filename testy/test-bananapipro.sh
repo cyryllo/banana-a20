@@ -8,6 +8,8 @@
 # Uzycie (na plytce):
 #   sudo ./test-bananapipro.sh                  wszystkie testy z pytaniami
 #   sudo ./test-bananapipro.sh --bez-pytan      tylko sprawdzenia automatyczne
+#   sudo ./test-bananapipro.sh --minimalny      to, czego wymaga Armbian, bez zadnej interakcji
+#                                               (bez ekranu LCD, GPIO, diod, pilota i przycisku)
 #   sudo ./test-bananapipro.sh --tylko sata,gpio   wybrane moduly (lista: --lista)
 #   sudo ./test-bananapipro.sh --przygotuj      narzedzia + nakladki pwm i spi-spidev do testow GPIO
 #   sudo ./test-bananapipro.sh --ekrany         ekrany LeMaker po kolei (kilka restartow)
@@ -27,6 +29,8 @@ STAN_EKRANOW=/var/lib/test-bananapipro/ekrany
 
 # CO: moduly testu w kolejnosci wykonania. "ekrany" jest osobnym trybem (--ekrany).
 MODULY=(system sd sata usb ethernet wifi siec obraz lcd dzwiek diody ir przycisk gpio obciazenie pakiety)
+# CO: test minimalny: lista kontrolna wydania Armbiana, same sprawdzenia automatyczne.
+MODULY_MINIMALNE="system,sd,sata,usb,ethernet,wifi,siec,obraz,dzwiek,obciazenie,pakiety"
 opis_modulu() {
 	case "$1" in
 		system) echo "plytka, obraz, jadro, uslugi, bledy jadra, temperatura" ;;
@@ -49,6 +53,7 @@ opis_modulu() {
 }
 
 PYTANIA=1
+MINIMALNY=0
 AKTUALIZACJA=0
 MASZ=0
 TRYB=test
@@ -56,13 +61,15 @@ WYBRANE=""
 for a in "$@"; do
 	case "${a}" in
 		--bez-pytan) PYTANIA=0 ;;
+		--minimalny) PYTANIA=0; WYBRANE="${MODULY_MINIMALNE}"; MINIMALNY=1 ;;
 		--aktualizacja) AKTUALIZACJA=1 ;;
 		--maszynowo) MASZ=1 ;;
 		--przygotuj) TRYB=przygotuj ;;
 		--ekrany) TRYB=ekrany ;;
 		--tylko=*) WYBRANE="${a#--tylko=}" ;;
 		--tylko) WYBRANE="?" ;;
-		--lista) for m in "${MODULY[@]}"; do echo "${m}|$(opis_modulu "${m}")"; done; exit 0 ;;
+		# CO: lista modulow: nazwa|opis|wymagany (1 = w tescie minimalnym, lista kontrolna Armbiana).
+		--lista) for m in "${MODULY[@]}"; do w=0; [[ ",${MODULY_MINIMALNE}," == *",${m},"* ]] && w=1; echo "${m}|$(opis_modulu "${m}")|${w}"; done; exit 0 ;;
 		-h | --pomoc) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 		*)
 			if [[ "${WYBRANE}" == "?" ]]; then WYBRANE="${a}"
@@ -641,19 +648,26 @@ m_diody() {
 		diody+=("${d}")
 	done
 	if [[ ${#diody[@]} -eq 0 ]]; then wynik FAIL LED "board LEDs" "no LEDs in /sys/class/leds"; return; fi
-	wynik PASS LED "board LEDs" "$(for d in "${diody[@]}"; do basename "$d"; done | paste -sd, | sed 's/,/, /g')"
-	[[ ${PYTANIA} -eq 1 ]] || return
+	wynik PASS LED "board LEDs" "found: $(for d in "${diody[@]}"; do basename "$d"; done | paste -sd, | sed 's/,/, /g')"
 	for d in "${diody[@]}"; do
 		nazwa=$(basename "${d}")
 		trig=$(grep -o '\[[^]]*\]' "${d}/trigger" | tr -d '[]')
-		czekaj "Patrz na plytke: dioda ${nazwa} bedzie szybko migac przez 4 sekundy"
-		# DLACZEGO reczne miganie, a nie wyzwalacz "timer": jadro Armbiana nie zawsze go ma.
 		jasn=$(cat "${d}/brightness")
+		# CO: dioda miga w tle; z pytaniami az do odpowiedzi, bez pytan przez 3 s.
+		# DLACZEGO reczne miganie: jadro nie zawsze ma wyzwalacz "timer".
 		echo none > "${d}/trigger"
-		for i in $(seq 10); do echo 1 > "${d}/brightness"; sleep 0.2; echo 0 > "${d}/brightness"; sleep 0.2; done
+		( while true; do echo 1 > "${d}/brightness"; sleep 0.2; echo 0 > "${d}/brightness"; sleep 0.2; done ) &
+		local miganie=$!
+		if [[ ${PYTANIA} -eq 1 ]]; then
+			pytanie LED "${nazwa}" "Dioda ${nazwa} na plytce powinna teraz szybko migac. Czy miga?"
+		else
+			info "Dioda ${nazwa} miga przez 3 sekundy..."
+			sleep 3
+			wynik SKIP LED "${nazwa}" "blinked for 3 s, not confirmed (no questions)"
+		fi
+		kill "${miganie}" 2> /dev/null; wait "${miganie}" 2> /dev/null
 		echo "${trig:-none}" > "${d}/trigger" 2> /dev/null
 		echo "${jasn}" > "${d}/brightness" 2> /dev/null
-		pytanie LED "${nazwa}" "Czy dioda ${nazwa} migala?"
 	done
 }
 
@@ -661,26 +675,33 @@ m_ir() {
 	local rc wej proto w n kody
 	rc=$(ls -d /sys/class/rc/rc* 2> /dev/null | head -1)
 	if [[ -z "${rc}" ]]; then wynik FAIL IR "receiver" "no remote controller device in /sys/class/rc"; return; fi
-	wynik PASS IR "receiver" "$(basename "${rc}"): $(grep -o 'DRV_NAME=.*' "${rc}/uevent" | cut -d= -f2)"
-	[[ ${PYTANIA} -eq 1 ]] || return
+	wynik PASS IR "receiver" "found: $(basename "${rc}"), $(grep -o 'DRV_NAME=.*' "${rc}/uevent" | cut -d= -f2)"
 	# CO: wlacza wszystkie dekodery pilotow, zeby kazdy pilot dal kody (scancode).
 	proto=$(tr -d '[]' < "${rc}/protocols")
 	for w in ${proto}; do echo "+${w}" > "${rc}/protocols" 2> /dev/null; done
 	wej=$(ls -d "${rc}"/input*/event* 2> /dev/null | head -1)
 	if [[ -z "${wej}" ]]; then wynik FAIL IR "remote" "no input device for $(basename "${rc}")"; return; fi
-	czekaj "Test pilota: po potwierdzeniu masz 10 sekund, naciskaj rozne przyciski pilota skierowanego na plytke"
+	if [[ ${PYTANIA} -eq 1 ]]; then
+		czekaj "Test pilota: po potwierdzeniu masz 10 sekund, naciskaj rozne przyciski pilota skierowanego na plytke"
+	else
+		info "Test pilota: przez 10 sekund naciskaj przyciski pilota skierowanego na plytke"
+	fi
 	w=$(licz_zdarzenia "/dev/input/$(basename "${wej}")" 10 4 4)
 	n=${w%%;*}; kody=${w#*;}
 	if [[ ${n} -gt 0 ]]; then wynik PASS IR "remote" "${n} codes received (${kody})"
-	else wynik FAIL IR "remote" "no codes received"; fi
+	elif [[ ${PYTANIA} -eq 1 ]]; then wynik FAIL IR "remote" "no codes received"
+	else wynik SKIP IR "remote" "no codes in 10 s (nobody pressed?)"; fi
 }
 
 m_przycisk() {
 	local wej n
 	wej=$(urzadzenie_wejscia axp20x-pek)
 	if [[ -z "${wej}" ]]; then wynik FAIL Button "power button" "no axp20x-pek input device"; return; fi
-	[[ ${PYTANIA} -eq 1 ]] || { wynik PASS Button "power button" "axp20x-pek ${wej}"; return; }
-	czekaj "Test przycisku zasilania: po potwierdzeniu masz 10 sekund, nacisnij KROTKO przycisk POWER na plytce (test przejmuje przycisk, system sie nie wylaczy)"
+	if [[ ${PYTANIA} -eq 1 ]]; then
+		czekaj "Test przycisku zasilania: po potwierdzeniu masz 10 sekund, nacisnij KROTKO przycisk POWER na plytce (test przejmuje przycisk, system sie nie wylaczy)"
+	else
+		info "Test przycisku zasilania: przez 10 sekund mozesz nacisnac KROTKO przycisk POWER (system sie nie wylaczy)"
+	fi
 	# DLACZEGO systemd-inhibit: bez tego logind wylaczylby plytke po nacisnieciu.
 	systemd-inhibit --what=handle-power-key --who=test-bananapipro --why="power button test" --mode=block sleep 13 &
 	local blokada=$!
@@ -688,7 +709,8 @@ m_przycisk() {
 	n=$(licz_zdarzenia "${wej}" 10 1 116 1 wylacznie | cut -d';' -f1)
 	kill "${blokada}" 2> /dev/null; wait "${blokada}" 2> /dev/null
 	if [[ ${n:-0} -gt 0 ]]; then wynik PASS Button "power button" "${n} presses reported (KEY_POWER)"
-	else wynik FAIL Button "power button" "no KEY_POWER event"; fi
+	elif [[ ${PYTANIA} -eq 1 ]]; then wynik FAIL Button "power button" "no KEY_POWER event"
+	else wynik SKIP Button "power button" "no press in 10 s (nobody pressed?)"; fi
 }
 
 # ---------------------------------------------------------------------- GPIO
@@ -849,6 +871,8 @@ m_obciazenie() {
 		sleep 2
 		t=$(($(cat /sys/class/thermal/thermal_zone0/temp 2> /dev/null || echo 0) / 1000)); [[ ${t} -gt ${tmax} ]] && tmax=${t}
 		f=$(($(cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq 2> /dev/null || echo 0) / 1000)); [[ ${f} -lt ${fmin} ]] && fmin=${f}
+		# CO: postep co 10 s, zeby okno nie wygladalo na zawieszone.
+		(( i % 5 == 0 )) && info "Obciazenie: $((i * 2)) s z ${czas}, ${t} C, ${f} MHz"
 		if [[ -n "${zas}" ]]; then
 			u=$(awk -v a="$(cat "${zas}/in_voltage0_raw")" -v b="$(cat "${zas}/in_voltage1_raw")" -v s="$(cat "${zas}/in_voltage0_scale")" 'BEGIN {printf "%d", (a > b ? a : b) * s}')
 			[[ ${u} -gt 0 && ${u} -lt ${umin} ]] && umin=${u}
@@ -872,7 +896,8 @@ m_obciazenie() {
 m_pakiety() {
 	local jadro audyt wstrz
 	zapisz "kernel packages" dpkg-query -W -f '${Package} ${Version}\n' 'linux-image-*' 'linux-dtb-*' 'linux-u-boot-*' 'armbian-*'
-	jadro=$(dpkg-query -W -f '${Package} ${Version}\n' 'linux-image-*' 2> /dev/null | grep -v '^$' | head -1)
+	# DLACZEGO db:Status-Abbrev: wzorzec pasuje tez do pakietow niezainstalowanych (bez wersji).
+	jadro=$(dpkg-query -W -f '${db:Status-Abbrev}|${Package} ${Version}\n' 'linux-image-*' 2> /dev/null | awk -F'|' '$1 ~ /^ii/ {print $2}' | head -1)
 	wynik PASS Packages "kernel package" "${jadro:-?}"
 	audyt=$(dpkg --audit 2>&1)
 	if [[ -z "${audyt}" ]] && apt-get check > /dev/null 2>&1; then wynik PASS Packages "dpkg/apt state" "consistent"
@@ -898,6 +923,7 @@ raport() {
 		echo "- Kernel: ${JADRO}"
 		echo "- Board: ${MODEL}"
 		echo "- Overlays: ${OVERLAYS:-none}"
+		[[ ${MINIMALNY} -eq 1 ]] && echo "- Mode: minimal, automatic checks only (release checklist; LCD panels and GPIO tested separately)"
 		[[ -n "${LINK_LOGU:-}" ]] && echo "- armbianmonitor: ${LINK_LOGU}"
 		echo "- Result: ${p} pass, ${f} fail, ${u} warning, ${s} skipped"
 		echo

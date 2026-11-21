@@ -36,10 +36,11 @@ Instaluje narzędzia (`gpiod`, `i2c-tools`, `alsa-utils`, `iw`) i dopisuje do `/
 sudo ./test-bananapipro.sh                     # wszystkie moduły, z pytaniami
 sudo ./test-bananapipro.sh --tylko sata,gpio   # wybrane moduły
 sudo ./test-bananapipro.sh --bez-pytan         # tylko sprawdzenia automatyczne
+sudo ./test-bananapipro.sh --minimalny         # lista kontrolna Armbiana, bez interakcji
 sudo ./test-bananapipro.sh --lista             # lista modułów
 ```
 
-**Okno** (obrazy z pulpitem): `python3 ~/testy/test-bananapipro-gui.py` albo skopiuj `test-bananapipro.desktop` do `~/.local/share/applications/` (w `Exec=` pełna ścieżka). Zaznacz moduły, **Start testu**, podaj hasło, potem odpowiadaj dużymi przyciskami (zrobionymi pod ekran dotykowy). Na końcu: **Otwórz raport** / **Kopiuj raport**.
+**Okno** (obrazy z pulpitem): `python3 ~/testy/test-bananapipro-gui.py` albo skopiuj `test-bananapipro.desktop` do `~/.local/share/applications/` (w `Exec=` pełna ścieżka). Zaznacz moduły (**Wymagane (Armbian)** zaznacza tylko listę kontrolną wydania i włącza "Bez pytań"), **Start testu**, podaj hasło, potem odpowiadaj dużymi przyciskami (zrobionymi pod ekran dotykowy). Na końcu: **Otwórz raport** / **Kopiuj raport**.
 
 Okno uruchamiaj **z pulpitu**, nie przez SSH: okienko hasła (polkit) należy do sesji pulpitu. Bez klawiatury użyj klawiatury ekranowej `onboard` (`sudo apt install onboard at-spi2-core`, potem w jej ustawieniach włącz pływającą ikonę).
 
@@ -50,6 +51,7 @@ Okno uruchamiaj **z pulpitu**, nie przez SSH: okienko hasła (polkit) należy do
 | (brak) | wszystkie moduły, z pytaniami |
 | `--tylko a,b` | tylko podane moduły |
 | `--bez-pytan` | tylko sprawdzenia automatyczne, np. przez SSH bez ekranu |
+| `--minimalny` | lista kontrolna wydania Armbiana, bez żadnej interakcji: system, SD, SATA, USB, Ethernet, Wi-Fi, sieć, HDMI, karty dźwiękowe, obciążenie, pakiety (ekrany LCD i GPIO testuje się osobno) |
 | `--przygotuj` | narzędzia i nakładki do testów GPIO |
 | `--ekrany` | ekrany LeMaker po kolei (niżej) |
 | `--aktualizacja` | najpierw `apt update` i `apt full-upgrade`, potem test |

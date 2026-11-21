@@ -21,7 +21,7 @@ import threading
 import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
-from gi.repository import Gdk, GLib, Gtk  # noqa: E402
+from gi.repository import Gdk, Gio, GLib, Gtk  # noqa: E402
 
 TU = os.path.dirname(os.path.realpath(__file__))
 SKRYPT = next((p for p in (os.path.join(TU, "test-bananapipro.sh"),
@@ -62,7 +62,8 @@ class Okno(Gtk.Window):
         if not SKRYPT:
             return []
         w = subprocess.run(["bash", SKRYPT, "--lista"], capture_output=True, text=True)
-        return [l.split("|", 1) for l in w.stdout.splitlines() if "|" in l]
+        # CO: nazwa|opis|wymagany; starsza wersja skryptu nie ma trzeciego pola.
+        return [(l.split("|") + ["0"])[:3] for l in w.stdout.splitlines() if "|" in l]
 
     def widok_wyboru(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, border_width=10)
@@ -77,7 +78,7 @@ class Okno(Gtk.Window):
         siatka = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, max_children_per_line=2,
                              column_spacing=12, row_spacing=2, homogeneous=True)
         self.pola = {}
-        for nazwa, opis in self.moduly:
+        for nazwa, opis, _wym in self.moduly:
             p = Gtk.CheckButton(active=True)
             l = Gtk.Label(xalign=0)
             l.set_markup(f"<b>{GLib.markup_escape_text(nazwa)}</b>  <small>{GLib.markup_escape_text(opis)}</small>")
@@ -95,6 +96,12 @@ class Okno(Gtk.Window):
             b = Gtk.Button(label=etykieta)
             b.connect("clicked", lambda _b, s=stan: [p.set_active(s) for p in self.pola.values()])
             rzad.pack_start(b, False, False, 0)
+        wymagane = Gtk.Button(label="Wymagane (Armbian)")
+        wymagane.set_tooltip_text("Zaznacza tylko testy z listy kontrolnej wydania Armbiana i włącza "
+                                  "\"Bez pytań\": system, SD, SATA, USB, Ethernet, Wi-Fi, sieć, HDMI, dźwięk, "
+                                  "obciążenie, pakiety. Ekran LCD i GPIO testujesz osobno.")
+        wymagane.connect("clicked", self.zaznacz_wymagane)
+        rzad.pack_start(wymagane, False, False, 0)
         self.bez_pytan = Gtk.CheckButton(label="Bez pytań (tylko automatyczne)")
         rzad.pack_start(self.bez_pytan, False, False, 8)
         box.pack_start(rzad, False, False, 0)
@@ -122,9 +129,19 @@ class Okno(Gtk.Window):
         box.pack_start(przyciski, False, False, 0)
         return box
 
+    def zaznacz_wymagane(self, _):
+        for nazwa, _opis, wym in self.moduly:
+            self.pola[nazwa].set_active(wym == "1")
+        self.bez_pytan.set_active(True)
+
     def start_testu(self, _):
         wybrane = [n for n, p in self.pola.items() if p.get_active()]
         if not wybrane:
+            return
+        # DLACZEGO --minimalny: raport dostaje wtedy dopisek "minimal, automatic checks only".
+        wymagane = [n for n, _o, w in self.moduly if w == "1"]
+        if sorted(wybrane) == sorted(wymagane) and self.bez_pytan.get_active():
+            self.uruchom(["--minimalny"])
             return
         arg = []
         if len(wybrane) < len(self.pola):
@@ -192,7 +209,7 @@ class Okno(Gtk.Window):
         self.b_kopiuj.connect("clicked", self.kopiuj_raport)
         dol.pack_end(self.b_kopiuj, False, False, 0)
         self.b_otworz = Gtk.Button(label="Otwórz raport")
-        self.b_otworz.connect("clicked", lambda _b: subprocess.Popen(["xdg-open", self.raport]))
+        self.b_otworz.connect("clicked", self.pokaz_raport)
         dol.pack_end(self.b_otworz, False, False, 0)
         self.b_wroc = Gtk.Button(label="Wróć")
         self.b_wroc.connect("clicked", lambda _b: self.stos.set_visible_child_name("wybor"))
@@ -286,6 +303,42 @@ class Okno(Gtk.Window):
         if kod in (126, 127) and len(self.wyniki) == 0:
             self.etap.set_text("Nie uruchomiono (anulowane hasło albo brak agenta polkit). W terminalu: sudo " + SKRYPT)
         return False
+
+    def pokaz_raport(self, _):
+        """CO: raport we wlasnym okienku (przewijany tekst).
+        DLACZEGO nie xdg-open: na lekkich obrazach nie ma xdg-utils ani programu
+        przypisanego do plikow .md; wlasne okienko dziala zawsze."""
+        with open(self.raport) as f:
+            tekst = f.read()
+        d = Gtk.Dialog(title="Raport", transient_for=self, modal=True)
+        d.set_default_size(760, 420)
+        widok = Gtk.TextView(editable=False, monospace=True, wrap_mode=Gtk.WrapMode.WORD_CHAR)
+        widok.get_buffer().set_text(tekst)
+        przewijanie = Gtk.ScrolledWindow(vexpand=True)
+        przewijanie.add(widok)
+        d.get_content_area().pack_start(przewijanie, True, True, 0)
+        d.add_button("W edytorze", 1)
+        d.add_button("Kopiuj", 2)
+        d.add_button("Zamknij", Gtk.ResponseType.CLOSE)
+        d.show_all()
+        while True:
+            odp = d.run()
+            if odp == 1:
+                # CO: domyslny program dla pliku (przez GIO, bez xdg-open); gdy go nie ma, edytor tekstu.
+                try:
+                    Gio.AppInfo.launch_default_for_uri(Gio.File.new_for_path(self.raport).get_uri(), None)
+                except GLib.Error:
+                    edytor = next((e for e in ("featherpad", "mousepad", "gedit", "kate", "xed", "pluma")
+                                   if shutil.which(e)), None)
+                    if edytor:
+                        subprocess.Popen([edytor, self.raport])
+                    else:
+                        self.etap.set_text("Brak programu do otwarcia pliku: " + self.raport)
+            elif odp == 2:
+                self.kopiuj_raport(None)
+            else:
+                break
+        d.destroy()
 
     def kopiuj_raport(self, _):
         with open(self.raport) as f:
