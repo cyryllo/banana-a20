@@ -155,6 +155,23 @@ If you installed a library from source before (`sudo ./build`, `sudo make instal
 
 The packages are built in a Debian 13 armhf container on a PC: [pakiety/zbuduj-deb.sh](pakiety/zbuduj-deb.sh) (needs Docker and QEMU for ARM, `sudo apt install qemu-user-static`).
 
+### Other A20 boards (Banana Pi M1, M1+)
+
+The packages install on any board with the A20 and Debian 13 armhf, for example the Banana Pi M1 (the original LeMaker Banana Pi) and the Banana Pi M1+. The header is what differs:
+
+- **libgpiod** and **lg** use kernel GPIO numbers (bank x 32 + pin), so they work on every A20 board. Take the numbers from your board's pinout; the picture on this page is for the Banana Pro.
+- **WiringBP** and **LMK.GPIO** know only the Banana Pro header. On the Banana Pi M1 and M1+ most of the first 26 pins are the same, but these are connected to other SoC pins (source: [BPI-SINOVOIP/BPI-WiringPi](https://github.com/BPI-SINOVOIP/BPI-WiringPi/tree/BPI_M1_M1Plus), branch `BPI_M1_M1Plus`):
+
+| Pin | Banana Pro | Banana Pi M1 / M1+ |
+|---|---|---|
+| 7 | PH2 | PI3 |
+| 8 | PH4 | PH0 |
+| 10 | PH5 | PH1 |
+| 12 | PI3 | PH2 |
+| 29, 31, 32, 33, 35, 36, 37, 38, 40 (M1+ only) | PB3, PI21, PI20, PB13, PB7, PB6, PB5, PB12, PB8 | PB5, PB6, PB12, PB7, PB8, PI21, PB3, PI20, PB13 |
+
+On those boards use WiringBP and LMK.GPIO only on the pins that are the same, or use lg or libgpiod. Everything here was tested only on the Banana Pro.
+
 ## Test circuit for the examples
 
 All examples use the same two parts, so one breadboard setup works for everything:

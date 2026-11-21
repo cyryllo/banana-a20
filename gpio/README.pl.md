@@ -155,6 +155,23 @@ Jeśli wcześniej instalowałeś bibliotekę ze źródeł (`sudo ./build`, `sudo
 
 Pakiety buduje się na komputerze w kontenerze Debiana 13 armhf: [pakiety/zbuduj-deb.sh](pakiety/zbuduj-deb.sh) (wymaga Dockera i QEMU dla ARM, `sudo apt install qemu-user-static`).
 
+### Inne płytki z A20 (Banana Pi M1, M1+)
+
+Pakiety instalują się na każdej płytce z A20 i Debianem 13 armhf, na przykład na Banana Pi M1 (pierwotny Banana Pi LeMakera) i Banana Pi M1+. Różni się złącze:
+
+- **libgpiod** i **lg** używają numerów GPIO z jądra (bank x 32 + pin), więc działają na każdej płytce z A20. Numery weź z rozkładu pinów swojej płytki; obrazek na tej stronie jest dla Banana Pro.
+- **WiringBP** i **LMK.GPIO** znają tylko złącze Banana Pro. Na Banana Pi M1 i M1+ większość z pierwszych 26 pinów jest taka sama, ale te są podłączone do innych nóżek układu (źródło: [BPI-SINOVOIP/BPI-WiringPi](https://github.com/BPI-SINOVOIP/BPI-WiringPi/tree/BPI_M1_M1Plus), gałąź `BPI_M1_M1Plus`):
+
+| Pin | Banana Pro | Banana Pi M1 / M1+ |
+|---|---|---|
+| 7 | PH2 | PI3 |
+| 8 | PH4 | PH0 |
+| 10 | PH5 | PH1 |
+| 12 | PI3 | PH2 |
+| 29, 31, 32, 33, 35, 36, 37, 38, 40 (tylko M1+) | PB3, PI21, PI20, PB13, PB7, PB6, PB5, PB12, PB8 | PB5, PB6, PB12, PB7, PB8, PI21, PB3, PI20, PB13 |
+
+Na tych płytkach używaj WiringBP i LMK.GPIO tylko na pinach, które są takie same, albo użyj lg lub libgpiod. Wszystko tutaj było testowane tylko na Banana Pro.
+
 ## Układ do przykładów
 
 Wszystkie przykłady używają tych samych dwóch elementów, więc jeden układ na płytce stykowej pasuje do wszystkiego:
