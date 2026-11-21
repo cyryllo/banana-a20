@@ -128,7 +128,7 @@ Ready packages for Debian 13 armhf: [gpio/README.md#packages-deb](gpio/README.md
 | [`armbian-build/`](armbian-build/README.md) | scripts to build the images yourself |
 | [`arkada20/`](arkada20/README.md) | the Arkada20 game console |
 | [`bosman20/`](bosman20/README.md) | the Bosman20 3D printer host |
-| [`testy/`](testy/README.md) | checklist and script for testing Armbian images on the Banana Pi Pro before a release |
+| [`testy/`](testy/README.md) | checklist, script and window for testing Armbian images (Debian, Ubuntu) on the Banana Pi Pro before a release |
 | [`lemaker-screen/`](lemaker-screen/README.md) | tool (window and commands, `.deb`) to choose the LeMaker panel, brightness and touch reset |
 | [`gpio/`](gpio/README.md) | GPIO libraries, pinout, examples |
 | `stare jądro sunxi 3.4/` | original LeMaker `fex`/`bin` files for the old 3.4 kernel, kept as the source of the panel parameters |

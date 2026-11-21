@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Banana Pi Pro test
+Name[pl]=Test Banana Pi Pro
+Comment=Armbian image test for the Banana Pi Pro (report for the board maintainer)
+Comment[pl]=Test obrazu Armbian na Banana Pi Pro (raport dla opiekuna płytki)
+Exec=test-bananapipro-gui
+Icon=utilities-system-monitor
+Terminal=false
+Categories=System;Monitor;
