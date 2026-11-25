@@ -12,6 +12,7 @@ LeMaker made the Banana Pro, its LCD panels and add-on boards around 2014-2015. 
 | [Arkada20](arkada20/README.md) | retro game console: the board boots straight into RetroArch, like Lakka | v1.1, tested with the 7" panel |
 | [Bosman20](bosman20/README.md) | 3D printer host: Klipper, Moonraker, Mainsail and KlipperScreen on the touchscreen, installed with KIAUH | first image, being tested |
 | [GPIO](gpio/README.md) | pinout, WiringBP (C, `gpio readall`) and LMK.GPIO (Python, RPi.GPIO API) fixed for the current kernel, lg (lgpio/rgpio) instead of pigpio, examples | done, tested on the board |
+| [Armbian Watch](armbian-watch/README.md) | tray icon for Armbian board maintainers: test images before a release, your PRs and issues, changes in your board's files, kernel version in apt | v1.3.1, `.deb` |
 
 Ready images are on the [Releases](https://github.com/cyryllo/banana-a20/releases) page: `v0.x-...` for the LCD images, `arkada20-...` for the game console, `bosman20-...` for the printer host.
 
@@ -131,6 +132,7 @@ Ready packages for Debian 13 armhf: [gpio/README.md#packages-deb](gpio/README.md
 | [`testy/`](testy/README.md) | checklist, script and window for testing Armbian images (Debian, Ubuntu) on the Banana Pi Pro before a release |
 | [`lemaker-screen/`](lemaker-screen/README.md) | tool (window and commands, `.deb`) to choose the LeMaker panel, brightness and touch reset |
 | [`gpio/`](gpio/README.md) | GPIO libraries, pinout, examples |
+| [`armbian-watch/`](armbian-watch/README.md) | Armbian Watch, a tray monitor for board maintainers (`.deb`) |
 | `stare jądro sunxi 3.4/` | original LeMaker `fex`/`bin` files for the old 3.4 kernel, kept as the source of the panel parameters |
 
 This repository started as a fork of [LeMaker/fex_configuration](https://github.com/LeMaker/fex_configuration).

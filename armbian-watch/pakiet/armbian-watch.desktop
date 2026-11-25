@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Armbian Watch
+GenericName=Tray monitor for GitHub, file directories and apt
+GenericName[pl]=Czujka w zasobniku: GitHub, katalogi plików, apt
+Comment=Notifies about new files on a server, pull requests, issues, releases and packages
+Comment[pl]=Daje znać o nowych plikach na serwerze, PR-ach, zgłoszeniach, wydaniach i pakietach
+Exec=armbian-watch
+Icon=armbian-watch
+Categories=Utility;
+Keywords=GitHub;monitor;tray;releases;apt;Armbian;czujka;
+StartupNotify=false

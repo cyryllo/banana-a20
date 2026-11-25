@@ -3,6 +3,7 @@
 - Board: LeMaker Banana Pi Pro (A20, 1 GB), powered over micro USB
 - Image: `Armbian_26.11.3_Bananapipro_resolute_current_6.18.65_xfce_desktop.img.xz` from fi.mirror.armbian.de/incoming/igorpecovnik/bananapipro/archive/ (Ubuntu 26.04, XFCE, kernel 6.18.65-current-sunxi, U-Boot 2026.07, build `0bf4c8e96`)
 - Minimal (CLI) image: `Armbian_26.11.3_Bananapipro_resolute_current_6.18.65_minimal.img.xz`, same checks: 25 pass, 0 fail, 2 warnings (4 kernel log lines of the same kinds, the same 2 `mmc` lines), 4 skipped (Ethernet cable, SATA disk, USB stick, HDMI picture question); HDMI console fine, no simpledrm issue without X
+- Debian minimal image: `Armbian_26.11.3_Bananapipro_trixie_current_6.18.65_minimal.img.xz` not run on the board yet; checked offline (checksum OK): same kernel config (`CONFIG_DRM_SIMPLEDRM=m`, `CONFIG_DRM_SUN4I=y`, `CONFIG_FB_SIMPLE=m`), no Xorg and no simpledrm in the initramfs, so the issue below does not show unless a desktop is installed; covered by the fix in #11557
 - Date: 2026-11-25
 - Tested with: `test-bananapipro.sh --minimalny` (automatic release checklist) and manual checks
 - Result: **both images ready for release**, with one desktop issue on HDMI without a panel (below, workaround known)
@@ -28,7 +29,7 @@
 
 ### Issue found: black screen on HDMI when X starts (no LCD panel)
 
-With HDMI only, U-Boot and the console show on the monitor, but it goes black when LightDM/Xorg starts. Cause: `CONFIG_DRM_SUN4I=y` binds at 0.5 s, `CONFIG_DRM_SIMPLEDRM=m` loads from the initramfs at 2.8 s and takes the U-Boot framebuffer, so there are two KMS devices and Xorg picks simpledrm as the primary screen. Same in `linux-sunxi-{legacy,current,edge}.config`, so it likely affects all 32-bit sunxi desktop images on HDMI without a panel. Details and logs: ISSUE_LINK.
+With HDMI only, U-Boot and the console show on the monitor, but it goes black when LightDM/Xorg starts. Cause: `CONFIG_DRM_SUN4I=y` binds at 0.5 s, `CONFIG_DRM_SIMPLEDRM=m` loads from the initramfs at 2.8 s and takes the U-Boot framebuffer, so there are two KMS devices and Xorg picks simpledrm as the primary screen. Same in `linux-sunxi-{legacy,current,edge}.config`, so it likely affects all 32-bit sunxi desktop images on HDMI without a panel. Details and logs: https://github.com/armbian/build/issues/11555. Fix: https://github.com/armbian/build/pull/11557 (disable simpledrm and simplefb on 32-bit sunxi; `CONFIG_DRM_SIMPLEDRM=y` is not enough on the A20), tested on this board with HDMI only, LCD only and LCD + HDMI.
 
 Workaround, tested on this board (the picture comes back):
 

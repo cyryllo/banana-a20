@@ -63,3 +63,9 @@ sudo reboot
 ```
 
 I am the maintainer of the Banana Pi Pro and can open a PR for the configs once the preferred fix is agreed.
+
+---
+
+Filed as https://github.com/armbian/build/issues/11555 (2026-11-25).
+
+Result: `CONFIG_DRM_SIMPLEDRM=y` is not enough on the A20 (built-in simpledrm still registers 0.1 s after sun4i-drm). Disabling `CONFIG_DRM_SIMPLEDRM` and `CONFIG_FB_SIMPLE` works: HDMI only, LCD only and LCD + HDMI tested on the Banana Pi Pro. Fix: https://github.com/armbian/build/pull/11557

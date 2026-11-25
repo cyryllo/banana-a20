@@ -1,0 +1,25 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: armbian-watch
+
+Files: *
+Copyright: 2026 Cyryl Sochacki
+License: GPL-3.0-or-later
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ version 3 can be found in "/usr/share/common-licenses/GPL-3".
+
+Files: ikona/armbian-watch.svg
+Copyright: Armbian project (https://github.com/armbian/build)
+Comment: The "A" mark (here and in ZNAK_A in armbian-watch.py) is redrawn
+ after the Armbian logo (packages/bsp/common/usr/share/pixmaps/armbian-logo.svg).
+ The penguin icon embedded in armbian-watch.py (PINGWIN_PNG) is
+ packages/bsp/common/usr/share/armbian/armbian-user-icon.png from the same
+ repository. Armbian is a
+ trademark of its project; this program is not an official Armbian product.
+License: GPL-2.0
+ On Debian systems, the complete text of the GNU General Public License
+ version 2 can be found in "/usr/share/common-licenses/GPL-2".

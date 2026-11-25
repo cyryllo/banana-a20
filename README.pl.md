@@ -12,6 +12,7 @@ LeMaker produkował Banana Pro, ekrany LCD i płytki rozszerzeń w latach 2014-2
 | [Arkada20](arkada20/README.pl.md) | konsola do gier retro: płytka od razu uruchamia RetroArch, jak Lakka | v1.1, sprawdzona z ekranem 7" |
 | [Bosman20](bosman20/README.pl.md) | host drukarki 3D: Klipper, Moonraker, Mainsail i KlipperScreen na ekranie dotykowym, instalowane przez KIAUH | pierwszy obraz, w testach |
 | [GPIO](gpio/README.pl.md) | grafika pinów, WiringBP (C, `gpio readall`) i LMK.GPIO (Python, API RPi.GPIO) poprawione pod obecne jądro, lg (lgpio/rgpio) zamiast pigpio, przykłady | gotowe, sprawdzone na płytce |
+| [Armbian Watch](armbian-watch/README.pl.md) | ikona w zasobniku dla opiekunów płytek w Armbianie: obrazy do testu przed wydaniem, Twoje PR-y i zgłoszenia, zmiany w plikach płytki, wersja jądra w apt | v1.3.1, `.deb` |
 
 Gotowe obrazy są na stronie [Releases](https://github.com/cyryllo/banana-a20/releases): `v0.x-...` to obrazy z ekranami LCD, `arkada20-...` to konsola do gier, `bosman20-...` to host drukarki 3D.
 
@@ -131,6 +132,7 @@ Gotowe pakiety dla Debiana 13 armhf: [gpio/README.pl.md#pakiety-deb](gpio/README
 | [`testy/`](testy/README.pl.md) | lista kontrolna, skrypt i okno do testów obrazów Armbiana (Debian, Ubuntu) na Banana Pi Pro przed wydaniem |
 | [`lemaker-screen/`](lemaker-screen/README.pl.md) | narzędzie (okienko i polecenia, `.deb`) do wyboru ekranu LeMaker, jasności i resetu dotyku |
 | [`gpio/`](gpio/README.pl.md) | biblioteki GPIO, grafika pinów, przykłady |
+| [`armbian-watch/`](armbian-watch/README.pl.md) | Armbian Watch, monitor w zasobniku dla opiekunów płytek (`.deb`) |
 | `stare jądro sunxi 3.4/` | oryginalne pliki `fex`/`bin` LeMakera dla starego jądra 3.4, zostawione jako źródło parametrów ekranów |
 
 To repozytorium zaczęło się jako fork [LeMaker/fex_configuration](https://github.com/LeMaker/fex_configuration).
