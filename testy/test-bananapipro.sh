@@ -764,6 +764,9 @@ m_gpio() {
 		gora=$(gpio_odczyt "${lin}" pull-up); dol=$(gpio_odczyt "${lin}" pull-down)
 		if [[ "${gora}" == zajety || "${dol}" == zajety ]]; then zajete+="${pin} "
 		elif [[ "${gora}" == 1 && "${dol}" == 0 ]]; then ok=$((ok + 1))
+		# DLACZEGO 27 i 28 osobno: to I2C3 (dotyk LCD), na plytce maja zewnetrzne rezystory
+		# podciagajace do 3,3 V, wiec wewnetrzne podciaganie w dol ich nie przewazy (1/1 = poprawnie).
+		elif [[ ( "${pin}" == 27 || "${pin}" == 28 ) && "${gora}" == 1 && "${dol}" == 1 ]]; then ok=$((ok + 1))
 		else zle+="${pin}(${naz}:${gora}/${dol}) "; fi
 	done
 	if [[ -z "${zle}" ]]; then wynik PASS GPIO "free pins, pull-up/down" "${ok} pins OK; not touched (used by I2C/UART/SPI/LCD...): ${zajete:-none}"
